@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banque International — Accueil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 800: '#0a192f', 900: '#020c1b', 950: '#010610' },
+                        gold: { 400: '#fbbf24', 500: '#d97706', 600: '#b45309' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({ pageLanguage: 'fr', autoDisplay: true }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+    <!-- EN-TÊTE ET NAVIGATION -->
+    <header class="bg-navy-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <a href="index.html" class="flex items-center space-x-3">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-lg bg-navy-800 border border-gold-500/30 overflow-hidden">
+                        <i class="fa-solid fa-building-columns text-gold-400 text-2xl"></i>
+                    </div>
+                    <span class="font-bold text-lg sm:text-xl tracking-wider text-slate-100">BANQUE <span class="text-gold-400">INTERNATIONAL</span></span>
+                </a>
+
+                <nav class="hidden lg:flex items-center space-x-6 text-sm font-medium">
+                    <a href="index.html" class="text-gold-400 font-bold">Accueil</a>
+                    <a href="solutions.html" class="hover:text-gold-400 transition-colors">Nos solutions</a>
+                    <a href="simulateur.html" class="hover:text-gold-400 transition-colors">Simulateur</a>
+                    <a href="contact.html" class="hover:text-gold-400 transition-colors">Contact</a>
+                </nav>
+
+                <div class="hidden lg:flex items-center space-x-4">
+                    <div id="google_translate_element"></div>
+                    <a href="contact.html#demande" class="bg-gold-500 hover:bg-gold-600 text-navy-950 font-semibold px-5 py-2.5 rounded-lg transition shadow-sm">
+                        Faire une demande
+                    </a>
+                </div>
+
+                <button id="mobile-menu-btn" class="lg:hidden p-2 text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden lg:hidden bg-navy-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-3">
+            <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-gold-400">Accueil</a>
+            <a href="solutions.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Nos solutions</a>
+            <a href="simulateur.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Simulateur</a>
+            <a href="contact.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Contact</a>
+            <a href="contact.html#demande" class="block w-full text-center bg-gold-500 text-navy-950 font-semibold py-3 rounded-lg">Faire une demande</a>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- BANNIÈRE D'ACCUEIL SANS BANDEAU JAUNE -->
+        <section class="relative bg-navy-900 text-white py-16 lg:py-24 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-navy-800 border border-gold-500/30 text-gold-400 text-xs font-semibold rounded-full uppercase tracking-wider mb-4">
+                            Accompagnement Financier International
+                        </span>
+                        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight mb-6">
+                            Votre projet mérite une solution de financement adaptée
+                        </h1>
+                        <p class="text-lg text-slate-300 mb-8 leading-relaxed">
+                            Découvrez nos solutions de financement et transmettez votre demande en ligne en quelques étapes simples.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="simulateur.html" class="inline-flex justify-center items-center px-6 py-3.5 bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold rounded-lg transition shadow-lg">
+                                <i class="fa-solid fa-calculator mr-2"></i> Simuler mon prêt
+                            </a>
+                            <a href="contact.html" class="inline-flex justify-center items-center px-6 py-3.5 bg-navy-800 text-white font-medium border border-slate-700 rounded-lg transition">
+                                <i class="fa-solid fa-envelope mr-2"></i> Nous contacter
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- IMAGE BANNIÈRE CENTRÉE -->
+                    <div class="flex items-center justify-center min-h-[300px] bg-navy-950/50 p-4 rounded-2xl border border-slate-800">
+                        <img src="https://share.google/Zfc28AGZN64oxh3GH" alt="Bannière Banque International" class="max-w-full max-h-[380px] object-contain rounded-xl shadow-2xl transition-all duration-300">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-navy-950 text-slate-400 text-xs py-8 border-t border-slate-800 text-center">
+        <p>&copy; Banque International. Tous droits réservés.</p>
+    </footer>
+
+    <script>
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
