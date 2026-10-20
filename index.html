@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banque International — Accueil</title>
+    <title>Banque International — Accueil & Solutions de Financement</title>
+    
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -17,34 +19,54 @@
             }
         }
     </script>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Translate Script -->
     <script type="text/javascript">
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({ pageLanguage: 'fr', autoDisplay: true }, 'google_translate_element');
         }
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <style>
+        .goog-te-gadget-simple {
+            background-color: #020c1b !important;
+            border: 1px solid rgba(251, 191, 36, 0.3) !important;
+            padding: 6px 12px !important;
+            border-radius: 8px !important;
+            font-size: 14px !important;
+        }
+        .goog-te-gadget-simple span { color: #ffffff !important; }
+        .goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased flex flex-col min-h-screen">
 
     <!-- EN-TÊTE ET NAVIGATION -->
     <header class="bg-navy-900 text-white sticky top-0 z-50 shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
+                
+                <!-- 1. LOGO DE LA BANQUE INTERNATIONAL -->
                 <a href="index.html" class="flex items-center space-x-3">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-lg bg-navy-800 border border-gold-500/30 overflow-hidden">
-                        <i class="fa-solid fa-building-columns text-gold-400 text-2xl"></i>
+                    <div class="w-12 h-12 flex items-center justify-center rounded-lg bg-navy-800 border border-gold-500/30 overflow-hidden p-1">
+                        <img src="logo.png" alt="Logo Banque International" class="max-w-full max-h-full object-contain mx-auto my-auto">
                     </div>
                     <span class="font-bold text-lg sm:text-xl tracking-wider text-slate-100">BANQUE <span class="text-gold-400">INTERNATIONAL</span></span>
                 </a>
 
+                <!-- Navigation Desktop -->
                 <nav class="hidden lg:flex items-center space-x-6 text-sm font-medium">
-                    <a href="index.html" class="text-gold-400 font-bold">Accueil</a>
-                    <a href="solutions.html" class="hover:text-gold-400 transition-colors">Nos solutions</a>
+                    <a href="index.html#accueil" class="text-gold-400 font-bold">Accueil</a>
+                    <a href="index.html#solutions" class="hover:text-gold-400 transition-colors">Nos solutions</a>
                     <a href="simulateur.html" class="hover:text-gold-400 transition-colors">Simulateur</a>
                     <a href="contact.html" class="hover:text-gold-400 transition-colors">Contact</a>
                 </nav>
 
+                <!-- Selecteur de Langue & Bouton CTA -->
                 <div class="hidden lg:flex items-center space-x-4">
                     <div id="google_translate_element"></div>
                     <a href="contact.html#demande" class="bg-gold-500 hover:bg-gold-600 text-navy-950 font-semibold px-5 py-2.5 rounded-lg transition shadow-sm">
@@ -52,15 +74,17 @@
                     </a>
                 </div>
 
-                <button id="mobile-menu-btn" class="lg:hidden p-2 text-slate-300 hover:text-white">
+                <!-- Menu Hamburger Mobile -->
+                <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-slate-300 hover:text-white">
                     <i class="fa-solid fa-bars text-2xl"></i>
                 </button>
             </div>
         </div>
 
+        <!-- Menu Mobile -->
         <div id="mobile-menu" class="hidden lg:hidden bg-navy-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-3">
-            <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-gold-400">Accueil</a>
-            <a href="solutions.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Nos solutions</a>
+            <a href="index.html#accueil" class="block px-3 py-2 rounded-md text-base font-medium text-gold-400">Accueil</a>
+            <a href="index.html#solutions" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Nos solutions</a>
             <a href="simulateur.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Simulateur</a>
             <a href="contact.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Contact</a>
             <a href="contact.html#demande" class="block w-full text-center bg-gold-500 text-navy-950 font-semibold py-3 rounded-lg">Faire une demande</a>
@@ -68,9 +92,9 @@
     </header>
 
     <main class="flex-grow">
-        <!-- BANNIÈRE D'ACCUEIL SANS BANDEAU JAUNE -->
-        <section class="relative bg-navy-900 text-white py-16 lg:py-24 overflow-hidden">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- SECTION ACCUEIL -->
+        <section id="accueil" class="relative bg-navy-900 text-white py-16 lg:py-24 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div>
                         <span class="inline-block px-3 py-1 bg-navy-800 border border-gold-500/30 text-gold-400 text-xs font-semibold rounded-full uppercase tracking-wider mb-4">
@@ -80,7 +104,7 @@
                             Votre projet mérite une solution de financement adaptée
                         </h1>
                         <p class="text-lg text-slate-300 mb-8 leading-relaxed">
-                            Découvrez nos solutions de financement et transmettez votre demande en ligne en quelques étapes simples.
+                            Découvrez nos solutions de financement et transmettez votre demande en ligne en quelques étapes simples. Chaque demande est étudiée selon les conditions applicables et votre situation.
                         </p>
                         <div class="flex flex-col sm:flex-row gap-4">
                             <a href="simulateur.html" class="inline-flex justify-center items-center px-6 py-3.5 bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold rounded-lg transition shadow-lg">
@@ -92,15 +116,100 @@
                         </div>
                     </div>
 
-                    <!-- IMAGE BANNIÈRE CENTRÉE -->
-                    <div class="flex items-center justify-center min-h-[300px] bg-navy-950/50 p-4 rounded-2xl border border-slate-800">
-                        <img src="https://share.google/Zfc28AGZN64oxh3GH" alt="Bannière Banque International" class="max-w-full max-h-[380px] object-contain rounded-xl shadow-2xl transition-all duration-300">
+                    <!-- Présentation visuelle -->
+                    <div class="bg-gradient-to-tr from-navy-800 to-slate-800 rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
+                        <div class="space-y-4">
+                            <div class="bg-navy-950/60 p-4 rounded-xl border border-slate-800 flex items-center space-x-4">
+                                <div class="p-3 bg-blue-500/10 text-blue-400 rounded-lg"><i class="fa-solid fa-laptop-code text-xl"></i></div>
+                                <div>
+                                    <h4 class="font-semibold text-sm">Démarche en ligne simple</h4>
+                                    <p class="text-xs text-slate-400">Soumettez votre demande facilement à tout moment.</p>
+                                </div>
+                            </div>
+                            <div class="bg-navy-950/60 p-4 rounded-xl border border-slate-800 flex items-center space-x-4">
+                                <div class="p-3 bg-gold-500/10 text-gold-400 rounded-lg"><i class="fa-solid fa-circle-info text-xl"></i></div>
+                                <div>
+                                    <h4 class="font-semibold text-sm">Transparence des conditions</h4>
+                                    <p class="text-xs text-slate-400">Des informations claires transmises dès la soumission.</p>
+                                </div>
+                            </div>
+                            <div class="bg-navy-950/60 p-4 rounded-xl border border-slate-800 flex items-center space-x-4">
+                                <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg"><i class="fa-solid fa-user-shield text-xl"></i></div>
+                                <div>
+                                    <h4 class="font-semibold text-sm">Accompagnement dédié</h4>
+                                    <p class="text-xs text-slate-400">Un suivi clair pour mieux comprendre les démarches.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION NOS SOLUTIONS (AVEC IMAGES PARFAITEMENT CENTRÉES ET RESPONSIVE) -->
+        <section id="solutions" class="py-16 bg-slate-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <h2 class="text-3xl font-bold text-navy-900 mb-4">Nos solutions de financement</h2>
+                    <p class="text-slate-600">Choisissez l'offre adaptée à votre besoin personnel ou professionnel.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <!-- 2. PRÊT PERSONNEL -->
+                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-slate-200 p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="w-full h-56 flex items-center justify-center bg-slate-50 rounded-lg overflow-hidden mb-6 p-2 border border-slate-100">
+                                <img src="pret-personnel.jpg" alt="Prêt personnel" class="max-w-full max-h-full object-contain mx-auto my-auto">
+                            </div>
+                            <h3 class="text-xl font-bold text-navy-900 mb-2">Prêt personnel</h3>
+                            <p class="text-slate-600 text-sm mb-4">Financement flexible pour vos projets personnels ou imprévus budgétaires sans obligation d'affectation rigide.</p>
+                        </div>
+                        <a href="contact.html#demande" class="w-full text-center bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold py-2.5 rounded-lg transition">Faire une demande</a>
+                    </div>
+
+                    <!-- 3. PRÊT POUR UN PROJET -->
+                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-slate-200 p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="w-full h-56 flex items-center justify-center bg-slate-50 rounded-lg overflow-hidden mb-6 p-2 border border-slate-100">
+                                <img src="pret-projet.jpg" alt="Prêt pour un projet" class="max-w-full max-h-full object-contain mx-auto my-auto">
+                            </div>
+                            <h3 class="text-xl font-bold text-navy-900 mb-2">Prêt pour un projet</h3>
+                            <p class="text-slate-600 text-sm mb-4">Accompagnement financier sur mesure pour concrétiser des projets professionnels ou personnels d'envergure.</p>
+                        </div>
+                        <a href="contact.html#demande" class="w-full text-center bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold py-2.5 rounded-lg transition">Faire une demande</a>
+                    </div>
+
+                    <!-- 4. PRÊT IMMOBILIER -->
+                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-slate-200 p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="w-full h-56 flex items-center justify-center bg-slate-50 rounded-lg overflow-hidden mb-6 p-2 border border-slate-100">
+                                <img src="pret-immobilier.jpg" alt="Prêt immobilier" class="max-w-full max-h-full object-contain mx-auto my-auto">
+                            </div>
+                            <h3 class="text-xl font-bold text-navy-900 mb-2">Prêt immobilier</h3>
+                            <p class="text-slate-600 text-sm mb-4">Financez l'acquisition, la construction ou la rénovation de votre bien immobilier à des taux compétitifs.</p>
+                        </div>
+                        <a href="contact.html#demande" class="w-full text-center bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold py-2.5 rounded-lg transition">Faire une demande</a>
+                    </div>
+
+                    <!-- 5. PRÊT AUTOMOBILE -->
+                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-slate-200 p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="w-full h-56 flex items-center justify-center bg-slate-50 rounded-lg overflow-hidden mb-6 p-2 border border-slate-100">
+                                <img src="pret-auto.jpg" alt="Prêt automobile" class="max-w-full max-h-full object-contain mx-auto my-auto">
+                            </div>
+                            <h3 class="text-xl font-bold text-navy-900 mb-2">Prêt automobile</h3>
+                            <p class="text-slate-600 text-sm mb-4">Solution dédiée à l'achat de votre véhicule neuf ou d'occasion, moto ou mobilité urbaine.</p>
+                        </div>
+                        <a href="contact.html#demande" class="w-full text-center bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold py-2.5 rounded-lg transition">Faire une demande</a>
+                    </div>
+
                 </div>
             </div>
         </section>
     </main>
 
+    <!-- PIED DE PAGE -->
     <footer class="bg-navy-950 text-slate-400 text-xs py-8 border-t border-slate-800 text-center">
         <p>&copy; Banque International. Tous droits réservés.</p>
     </footer>
