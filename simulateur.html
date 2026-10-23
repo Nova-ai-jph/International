@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Banque International — Simulateur de Prêt</title>
+    
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -17,42 +19,100 @@
             }
         }
     </script>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Translate Script -->
     <script type="text/javascript">
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({ pageLanguage: 'fr', autoDisplay: true }, 'google_translate_element');
         }
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-</head>
-<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
 
+    <style>
+        .goog-te-gadget-simple {
+            background-color: #020c1b !important;
+            border: 1px solid rgba(251, 191, 36, 0.3) !important;
+            padding: 6px 12px !important;
+            border-radius: 8px !important;
+            font-size: 14px !important;
+        }
+        .goog-te-gadget-simple span { color: #ffffff !important; }
+        .goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased flex flex-col min-h-screen">
+
+    <!-- EN-TÊTE ET NAVIGATION -->
     <header class="bg-navy-900 text-white sticky top-0 z-50 shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
+                
+                <!-- LOGO DE LA BANQUE INTERNATIONAL -->
                 <a href="index.html" class="flex items-center space-x-3">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-lg bg-navy-800 border border-gold-500/30">
-                        <i class="fa-solid fa-building-columns text-gold-400 text-2xl"></i>
+                    <div class="w-12 h-12 flex items-center justify-center rounded-lg bg-navy-800 border border-gold-500/30 overflow-hidden p-1">
+                        <img src="logo.png" alt="Logo Banque International" class="max-w-full max-h-full object-contain mx-auto my-auto">
                     </div>
-                    <span class="font-bold text-lg sm:text-xl tracking-wider">BANQUE <span class="text-gold-400">INTERNATIONAL</span></span>
+                    <span class="font-bold text-lg sm:text-xl tracking-wider text-slate-100">BANQUE <span class="text-gold-400">INTERNATIONAL</span></span>
                 </a>
+
+                <!-- Navigation Desktop -->
                 <nav class="hidden lg:flex items-center space-x-6 text-sm font-medium">
-                    <a href="index.html" class="hover:text-gold-400">Accueil</a>
-                    <a href="solutions.html" class="hover:text-gold-400">Nos solutions</a>
+                    <a href="index.html#accueil" class="hover:text-gold-400 transition-colors">Accueil</a>
+                    <a href="index.html#solutions" class="hover:text-gold-400 transition-colors">Nos solutions</a>
                     <a href="simulateur.html" class="text-gold-400 font-bold">Simulateur</a>
-                    <a href="contact.html" class="hover:text-gold-400">Contact</a>
+                    <a href="contact.html" class="hover:text-gold-400 transition-colors">Contact</a>
                 </nav>
-                <div id="google_translate_element" class="hidden lg:block"></div>
+
+                <!-- Sélecteur de Langue & CTA -->
+                <div class="hidden lg:flex items-center space-x-4">
+                    <div id="google_translate_element"></div>
+                    <a href="contact.html#demande" class="bg-gold-500 hover:bg-gold-600 text-navy-950 font-semibold px-5 py-2.5 rounded-lg transition shadow-sm">
+                        Faire une demande
+                    </a>
+                </div>
+
+                <!-- Menu Mobile Hamburger -->
+                <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-bars text-2xl"></i>
+                </button>
             </div>
+        </div>
+
+        <!-- Menu Mobile -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-navy-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-3">
+            <a href="index.html#accueil" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Accueil</a>
+            <a href="index.html#solutions" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Nos solutions</a>
+            <a href="simulateur.html" class="block px-3 py-2 rounded-md text-base font-medium text-gold-400">Simulateur</a>
+            <a href="contact.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Contact</a>
+            <a href="contact.html#demande" class="block w-full text-center bg-gold-500 text-navy-950 font-semibold py-3 rounded-lg">Faire une demande</a>
         </div>
     </header>
 
-    <main class="py-16 bg-white flex-grow">
+    <main class="py-12 bg-slate-100 flex-grow">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-navy-900 text-white rounded-2xl p-6 sm:p-10 shadow-xl border border-slate-800">
+                
                 <div class="text-center mb-8">
                     <h1 class="text-2xl sm:text-3xl font-bold mb-2">Simulateur de prêt interactif</h1>
-                    <p class="text-slate-300 text-sm">Devise détectée automatiquement selon votre région : <span id="currency-label" class="text-gold-400 font-bold">EUR (€)</span></p>
+                    <p class="text-slate-300 text-xs sm:text-sm mb-4">
+                        Devise actuellement sélectionnée : <span id="currency-label" class="text-gold-400 font-bold">FCFA</span>
+                    </p>
+
+                    <!-- Choix Manuel de la Devise -->
+                    <div class="inline-flex items-center space-x-2 bg-navy-950 px-4 py-2 rounded-lg border border-slate-700">
+                        <label for="currency-select" class="text-xs text-slate-300">Changer de devise :</label>
+                        <select id="currency-select" onchange="changeCurrencyManual(this.value)" class="bg-navy-900 text-gold-400 text-xs font-bold rounded p-1 border border-slate-700 focus:outline-none">
+                            <option value="FCFA">FCFA (XOF / XAF)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="USD">USD ($ - USA / Porto Rico)</option>
+                            <option value="MXN">MXN ($)</option>
+                            <option value="CAD">CAD ($)</option>
+                            <option value="GBP">GBP (£)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -60,9 +120,13 @@
                         <div>
                             <label class="block text-sm font-medium mb-2 flex justify-between">
                                 <span>Montant souhaité</span>
-                                <span id="amount-val" class="font-bold text-gold-400">10 000</span>
+                                <span id="amount-val" class="font-bold text-gold-400">5 000 000 FCFA</span>
                             </label>
-                            <input type="range" id="sim-amount" min="1000" max="100000" step="1000" value="10000" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-gold-500">
+                            <input type="range" id="sim-amount" min="100000" max="50000000" step="100000" value="5000000" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-gold-500">
+                            <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                                <span id="min-amount-label">100 000</span>
+                                <span id="max-amount-label">50 000 000</span>
+                            </div>
                         </div>
 
                         <div>
@@ -71,11 +135,15 @@
                                 <span id="duration-val" class="font-bold text-gold-400">36 mois</span>
                             </label>
                             <input type="range" id="sim-duration" min="12" max="120" step="6" value="36" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-gold-500">
+                            <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                                <span>12 mois</span>
+                                <span>120 mois</span>
+                            </div>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium mb-2">Type de financement</label>
-                            <select id="sim-type" class="w-full bg-navy-950 border border-slate-700 rounded-lg p-3 text-white text-sm">
+                            <select id="sim-type" class="w-full bg-navy-950 border border-slate-700 rounded-lg p-3 text-white text-sm focus:outline-none">
                                 <option value="personnel">Prêt personnel</option>
                                 <option value="projet">Prêt pour un projet</option>
                                 <option value="immobilier">Prêt immobilier</option>
@@ -89,20 +157,20 @@
                         
                         <div class="flex justify-between items-center text-sm">
                             <span class="text-slate-400">Montant :</span>
-                            <span id="res-amount" class="font-bold">10 000</span>
+                            <span id="res-amount" class="font-bold">5 000 000 FCFA</span>
                         </div>
                         <div class="flex justify-between items-center text-sm">
                             <span class="text-slate-400">Durée :</span>
                             <span id="res-duration" class="font-bold">36 mois</span>
                         </div>
                         <div class="flex justify-between items-center text-sm">
-                            <span class="text-slate-400">Coût total du crédit :</span>
+                            <span class="text-slate-400">Coût total estimé :</span>
                             <span id="res-cost" class="font-bold text-amber-400">--</span>
                         </div>
 
                         <div class="pt-4 border-t border-slate-800">
                             <span class="text-xs text-slate-400 uppercase tracking-wider block mb-1">Mensualité estimée</span>
-                            <div id="res-monthly" class="text-3xl font-extrabold text-gold-400">--</div>
+                            <div id="res-monthly" class="text-2xl sm:text-3xl font-extrabold text-gold-400">--</div>
                         </div>
 
                         <a href="contact.html#demande" class="w-full bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold py-3 rounded-lg transition shadow text-center block text-sm mt-4">
@@ -114,27 +182,66 @@
         </div>
     </main>
 
-    <script>
-        // Détection automatique de la devise internationale selon le système/navigateur du client
-        let userCurrency = "€";
-        let currencyCode = "EUR";
+    <!-- PIED DE PAGE -->
+    <footer class="bg-navy-950 text-slate-400 text-xs py-8 border-t border-slate-800 text-center">
+        <p>&copy; Banque International. Tous droits réservés.</p>
+    </footer>
 
-        function detectUserCurrency() {
+    <script>
+        let userCurrency = "FCFA";
+        let currencyCode = "FCFA";
+
+        // Détection automatique intelligente multirégionale
+        function autoDetectCurrency() {
             try {
                 const lang = navigator.language || 'fr-FR';
-                if (lang.includes('MX') || lang.includes('es-MX')) { userCurrency = "$ MXN"; currencyCode = "MXN"; }
-                else if (lang.includes('US') || lang.includes('en-US')) { userCurrency = "$ USD"; currencyCode = "USD"; }
-                else if (lang.includes('CA') || lang.includes('en-CA')) { userCurrency = "$ CAD"; currencyCode = "CAD"; }
-                else if (lang.includes('GB') || lang.includes('en-GB')) { userCurrency = "£"; currencyCode = "GBP"; }
-                else if (lang.includes('JP') || lang.includes('ja')) { userCurrency = "¥"; currencyCode = "JPY"; }
-                else { userCurrency = "€"; currencyCode = "EUR"; }
+                const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+
+                if (lang.includes('PR') || lang.includes('es-PR') || lang.includes('US') || lang.includes('en-US')) {
+                    setCurrencyConfig("USD", "$ USD", 1000, 100000, 10000, 1000);
+                } else if (lang.includes('MX') || lang.includes('es-MX')) {
+                    setCurrencyConfig("MXN", "$ MXN", 10000, 1000000, 100000, 5000);
+                } else if (lang.includes('CA') || lang.includes('en-CA')) {
+                    setCurrencyConfig("CAD", "$ CAD", 1000, 100000, 10000, 1000);
+                } else if (lang.includes('GB') || lang.includes('en-GB')) {
+                    setCurrencyConfig("GBP", "£", 1000, 100000, 10000, 1000);
+                } else if (lang.includes('BJ') || lang.includes('CI') || lang.includes('SN') || lang.includes('CM') || lang.includes('TG') || lang.includes('BF') || timeZone.includes('Africa')) {
+                    setCurrencyConfig("FCFA", "FCFA", 100000, 50000000, 5000000, 100000);
+                } else {
+                    setCurrencyConfig("EUR", "€", 1000, 100000, 10000, 1000);
+                }
             } catch(e) {
-                userCurrency = "€";
+                setCurrencyConfig("FCFA", "FCFA", 100000, 50000000, 5000000, 100000);
             }
-            document.getElementById('currency-label').textContent = `${currencyCode} (${userCurrency})`;
         }
 
-        detectUserCurrency();
+        function setCurrencyConfig(code, symbol, min, max, defaultVal, step) {
+            currencyCode = code;
+            userCurrency = symbol;
+            
+            document.getElementById('currency-label').textContent = `${currencyCode} (${userCurrency})`;
+            document.getElementById('currency-select').value = code;
+
+            const amountInput = document.getElementById('sim-amount');
+            amountInput.min = min;
+            amountInput.max = max;
+            amountInput.step = step;
+            amountInput.value = defaultVal;
+
+            document.getElementById('min-amount-label').textContent = min.toLocaleString('fr-FR');
+            document.getElementById('max-amount-label').textContent = max.toLocaleString('fr-FR');
+
+            calculateLoan();
+        }
+
+        function changeCurrencyManual(code) {
+            if (code === "FCFA") setCurrencyConfig("FCFA", "FCFA", 100000, 50000000, 5000000, 100000);
+            else if (code === "EUR") setCurrencyConfig("EUR", "€", 1000, 100000, 10000, 1000);
+            else if (code === "USD") setCurrencyConfig("USD", "$ USD", 1000, 100000, 10000, 1000);
+            else if (code === "MXN") setCurrencyConfig("MXN", "$ MXN", 10000, 1000000, 100000, 5000);
+            else if (code === "CAD") setCurrencyConfig("CAD", "$ CAD", 1000, 100000, 10000, 1000);
+            else if (code === "GBP") setCurrencyConfig("GBP", "£", 1000, 100000, 10000, 1000);
+        }
 
         const amountInput = document.getElementById('sim-amount');
         const durationInput = document.getElementById('sim-duration');
@@ -142,24 +249,33 @@
         function calculateLoan() {
             const P = parseFloat(amountInput.value);
             const n = parseInt(durationInput.value);
-            const r = 0.05 / 12;
+            const r = 0.05 / 12; // Taux d'intérêt fixe annuel de 5%
 
             const monthlyPayment = (P * r) / (1 - Math.pow(1 + r, -n));
             const totalRepaid = monthlyPayment * n;
             const totalCost = totalRepaid - P;
 
-            document.getElementById('amount-val').textContent = P.toLocaleString() + ' ' + userCurrency;
+            const formattedAmount = P.toLocaleString('fr-FR');
+            const formattedMonthly = Math.round(monthlyPayment).toLocaleString('fr-FR');
+            const formattedCost = Math.round(totalCost).toLocaleString('fr-FR');
+
+            document.getElementById('amount-val').textContent = formattedAmount + ' ' + userCurrency;
             document.getElementById('duration-val').textContent = n + ' mois';
 
-            document.getElementById('res-amount').textContent = P.toLocaleString() + ' ' + userCurrency;
+            document.getElementById('res-amount').textContent = formattedAmount + ' ' + userCurrency;
             document.getElementById('res-duration').textContent = n + ' mois';
-            document.getElementById('res-monthly').textContent = monthlyPayment.toFixed(2) + ' ' + userCurrency + ' / mois';
-            document.getElementById('res-cost').textContent = Math.round(totalCost).toLocaleString() + ' ' + userCurrency;
+            document.getElementById('res-monthly').textContent = formattedMonthly + ' ' + userCurrency + ' / mois';
+            document.getElementById('res-cost').textContent = formattedCost + ' ' + userCurrency;
         }
 
         amountInput.addEventListener('input', calculateLoan);
         durationInput.addEventListener('input', calculateLoan);
-        calculateLoan();
+        
+        autoDetectCurrency();
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
     </script>
 </body>
 </html>
