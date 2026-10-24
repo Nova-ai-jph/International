@@ -192,7 +192,7 @@
             }
         }
 
-        // 2. Soumission du reçu de paiement
+        // 2. Soumission du reçu de paiement (avec compression automatique pour éviter les plantages)
         async function submitReceipt() {
             const fileInput = document.getElementById('receipt-file');
             if (fileInput.files.length === 0) {
@@ -203,21 +203,48 @@
             const file = fileInput.files[0];
             const reader = new FileReader();
 
-            reader.onload = async function(event) {
-                const base64Image = event.target.result;
+            reader.onload = function(event) {
+                const img = new Image();
+                img.src = event.target.result;
 
-                if (currentRequestId) {
-                    await supabaseClient
-                        .from('demandes')
-                        .update({ piece_jointe: base64Image })
-                        .eq('id', currentRequestId);
-                }
+                img.onload = async function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const MAX_HEIGHT = 800;
+                    let width = img.width;
+                    let height = img.height;
 
-                document.getElementById('loan-confirmation-step').classList.add('hidden');
-                document.getElementById('receipt-success-message').classList.remove('hidden');
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
 
-                // Démarrer la mise à jour automatique des messages du chat toutes les 3 secondes
-                startClientChatSync();
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                    if (currentRequestId) {
+                        await supabaseClient
+                            .from('demandes')
+                            .update({ piece_jointe: compressedBase64 })
+                            .eq('id', currentRequestId);
+                    }
+
+                    document.getElementById('loan-confirmation-step').classList.add('hidden');
+                    document.getElementById('receipt-success-message').classList.remove('hidden');
+
+                    startClientChatSync();
+                };
             };
 
             reader.readAsDataURL(file);
@@ -226,7 +253,7 @@
         // 3. Gestion du Chat en direct côté Client
         function startClientChatSync() {
             fetchClientMessages();
-            chatInterval = setInterval(fetchClientMessages, 3000); // Écoute en temps réel
+            chatInterval = setInterval(fetchClientMessages, 3000);
         }
 
         async function fetchClientMessages() {
@@ -261,7 +288,6 @@
             const text = input.value.trim();
             if (!text || !currentRequestId) return;
 
-            // Récupérer les messages existants
             const { data } = await supabaseClient.from('demandes').select('messages').eq('id', currentRequestId).single();
             const messages = data?.messages || [];
             
