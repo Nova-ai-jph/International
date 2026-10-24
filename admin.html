@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banque International — Espace Administrateur</title>
+    <title>Banque International — Espace Administrateur Pro</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +20,6 @@
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -49,12 +48,11 @@
             <div class="text-center mb-6">
                 <i class="fa-solid fa-user-shield text-4xl text-gold-400 mb-3"></i>
                 <h1 class="text-2xl font-bold">Connexion Administrateur</h1>
-                <p class="text-xs text-slate-400 mt-1">Accès réservé au personnel autorisé</p>
+                <p class="text-xs text-slate-400 mt-1">Accès sécurisé au personnel</p>
             </div>
-
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Adresse E-mail</label>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">E-mail</label>
                     <input type="email" id="login-email" required class="w-full bg-navy-900 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-gold-500 text-white">
                 </div>
                 <div>
@@ -68,10 +66,10 @@
             </form>
         </div>
 
-        <!-- TABLEAU DE BORD D'ADMINISTRATION -->
+        <!-- TABLEAU DE BORD -->
         <div id="dashboard-section" class="hidden space-y-8">
             
-            <!-- CARTES DE STATISTIQUES -->
+            <!-- STATS -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div class="bg-navy-950 p-6 rounded-xl border border-slate-800 flex items-center justify-between">
                     <div>
@@ -96,23 +94,14 @@
                 </div>
             </div>
 
-            <!-- TABLEAU DES DEMANDES CLIENTS -->
+            <!-- TABLEAU DES DEMANDES -->
             <div class="bg-navy-950 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
                 <div class="p-6 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 class="text-lg font-bold flex items-center space-x-2">
                         <i class="fa-solid fa-list text-gold-400"></i>
-                        <span>Gestion des demandes de prêt</span>
+                        <span>Gestion des demandes et dossiers clients</span>
                     </h2>
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="text" id="search-input" oninput="filterRequests()" placeholder="Rechercher nom, email, tel..." class="bg-navy-900 border border-slate-700 text-xs rounded-lg px-3 py-2 text-white focus:outline-none focus:border-gold-500">
-                        <select id="status-filter" onchange="filterRequests()" class="bg-navy-900 border border-slate-700 text-xs rounded-lg px-3 py-2 text-gold-400 focus:outline-none">
-                            <option value="ALL">Tous les statuts</option>
-                            <option value="En attente">En attente</option>
-                            <option value="En cours">En cours</option>
-                            <option value="Approuvé">Approuvé</option>
-                            <option value="Refusé">Refusé</option>
-                        </select>
-                    </div>
+                    <input type="text" id="search-input" oninput="filterRequests()" placeholder="Rechercher..." class="bg-navy-900 border border-slate-700 text-xs rounded-lg px-3 py-2 text-white focus:outline-none focus:border-gold-500">
                 </div>
 
                 <div class="overflow-x-auto">
@@ -121,38 +110,58 @@
                             <tr>
                                 <th class="p-4">Date</th>
                                 <th class="p-4">Client</th>
-                                <th class="p-4">WhatsApp</th>
-                                <th class="p-4">Type & Montant</th>
+                                <th class="p-4">Montant & Type</th>
+                                <th class="p-4">Photo / Document</th>
                                 <th class="p-4">Statut</th>
-                                <th class="p-4">Actions</th>
+                                <th class="p-4">Actions & Discussion</th>
                             </tr>
                         </thead>
-                        <tbody id="requests-table-body" class="divide-y divide-slate-800/60">
-                            <!-- Données chargées dynamiquement -->
-                        </tbody>
+                        <tbody id="requests-table-body" class="divide-y divide-slate-800/60"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="bg-navy-950 border-t border-slate-800 text-center py-4 text-xs text-slate-500">
-        &copy; Banque International — Administration sécurisée
-    </footer>
+    <!-- MODAL DE DISCUSSION ET PHOTOS -->
+    <div id="chat-modal" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+        <div class="bg-navy-950 border border-slate-800 w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col h-[600px] shadow-2xl">
+            <div class="bg-navy-900 p-4 border-b border-slate-800 flex justify-between items-center">
+                <h3 id="chat-client-name" class="font-bold text-sm text-gold-400">Discussion Client</h3>
+                <button onclick="closeChat()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <!-- SECTION PIÈCE JOINTE / PHOTO -->
+            <div id="chat-attachment-container" class="hidden p-3 bg-navy-900/50 border-b border-slate-800 flex items-center justify-between">
+                <span class="text-xs text-slate-300"><i class="fa-solid fa-image mr-1 text-gold-400"></i> Photo/Document envoyé par le client :</span>
+                <a id="chat-attachment-link" href="#" target="_blank" class="text-xs bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold px-3 py-1 rounded">Voir le fichier</a>
+            </div>
+
+            <!-- MESSAGES -->
+            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-navy-950 text-xs"></div>
+
+            <!-- ENVOI DE MESSAGE -->
+            <form onsubmit="sendAdminMessage(event)" class="p-3 bg-navy-900 border-t border-slate-800 flex gap-2">
+                <input type="text" id="admin-msg-input" required placeholder="Écrire un message au client..." class="flex-grow bg-navy-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-gold-500">
+                <button type="submit" class="bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold px-4 py-2 rounded-lg text-xs">Envoyer</button>
+            </form>
+        </div>
+    </div>
 
     <script>
-        // CONFIGURATION SUPABASE OFFICIELLE
         const SUPABASE_URL = "https://ibrbrpctifzrksfsqbiv.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_0Wbabg9JV5RrfWkm_PoIhw_xyXFNsiy";
-        
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         let allRequests = [];
+        let currentRequestId = null;
+        let lastCount = 0;
 
-        // Vérifier si un admin est déjà connecté au chargement
         window.addEventListener('DOMContentLoaded', async () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user) {
                 showDashboard(session.user);
+                setInterval(checkNewRequests, 10000); // Vérification automatique toutes les 10s
             }
         });
 
@@ -161,13 +170,11 @@
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             const errDiv = document.getElementById('login-error');
-
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) {
-                errDiv.textContent = "Identifiants incorrects ou non autorisés.";
+                errDiv.textContent = "Identifiants incorrects.";
                 errDiv.classList.remove('hidden');
             } else {
-                errDiv.classList.add('hidden');
                 showDashboard(data.user);
             }
         }
@@ -188,10 +195,27 @@
         async function loadRequests() {
             const { data, error } = await supabaseClient.from('demandes').select('*').order('created_at', { ascending: false });
             if (!error && data) {
+                if (lastCount > 0 && data.length > lastCount) {
+                    playAlertSound(); // Alerte sonore
+                }
+                lastCount = data.length;
                 allRequests = data;
                 updateStats();
                 renderRequests(allRequests);
             }
+        }
+
+        async function checkNewRequests() {
+            const { count } = await supabaseClient.from('demandes').select('*', { count: 'exact', head: true });
+            if (count > lastCount) {
+                playAlertSound();
+                loadRequests();
+            }
+        }
+
+        function playAlertSound() {
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+            audio.play().catch(e => console.log("Audio bloqué par le navigateur"));
         }
 
         function updateStats() {
@@ -203,28 +227,27 @@
         function renderRequests(list) {
             const tbody = document.getElementById('requests-table-body');
             tbody.innerHTML = '';
-
             if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Aucune demande enregistrée pour le moment.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Aucune demande pour le moment.</td></tr>`;
                 return;
             }
 
             list.forEach(req => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-navy-900/50 transition";
-                
                 const cleanPhone = (req.whatsapp || '').replace(/[^0-9]/g, '');
                 const waUrl = `https://wa.me/${cleanPhone}`;
+
+                let photoHtml = `<span class="text-slate-500">Aucune</span>`;
+                if (req.piece_jointe) {
+                    photoHtml = `<a href="${req.piece_jointe}" target="_blank" class="text-gold-400 underline font-semibold flex items-center"><i class="fa-solid fa-image mr-1"></i> Voir la photo</a>`;
+                }
 
                 tr.innerHTML = `
                     <td class="p-4 text-slate-400">${new Date(req.created_at).toLocaleDateString('fr-FR')}</td>
                     <td class="p-4 font-semibold text-white">${req.nom_complet}<br><span class="text-slate-400 font-normal">${req.email}</span></td>
-                    <td class="p-4">
-                        <a href="${waUrl}" target="_blank" class="inline-flex items-center text-emerald-400 hover:underline">
-                            <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> ${req.whatsapp}
-                        </a>
-                    </td>
-                    <td class="p-4">${req.type_pret}<br><span class="text-gold-400 font-bold">${req.montant} ${req.devise || ''}</span></td>
+                    <td class="p-4">${req.type_pret}<br><span class="text-gold-400 font-bold">${req.montant}</span></td>
+                    <td class="p-4">${photoHtml}</td>
                     <td class="p-4">
                         <select onchange="updateStatus('${req.id}', this.value)" class="bg-navy-900 border border-slate-700 text-xs rounded p-1 text-slate-200">
                             <option value="En attente" ${req.statut === 'En attente' ? 'selected' : ''}>En attente</option>
@@ -233,31 +256,72 @@
                             <option value="Refusé" ${req.statut === 'Refusé' ? 'selected' : ''}>Refusé</option>
                         </select>
                     </td>
-                    <td class="p-4 space-x-2">
-                        <a href="${waUrl}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded text-[11px] font-bold">
-                            WhatsApp
-                        </a>
-                        <button onclick="deleteRequest('${req.id}')" class="bg-red-600/30 hover:bg-red-600 text-red-300 px-2 py-1 rounded text-[11px]">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <td class="p-4 space-x-1 flex items-center">
+                        <a href="${waUrl}" target="_blank" class="bg-emerald-600 text-white px-2 py-1 rounded text-[11px] font-bold"><i class="fa-brands fa-whatsapp"></i></a>
+                        <button onclick="openChat('${req.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-[11px] font-bold"><i class="fa-solid fa-comments"></i> Chat</button>
+                        <button onclick="deleteRequest('${req.id}')" class="bg-red-600/30 text-red-300 px-2 py-1 rounded text-[11px]"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function filterRequests() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const status = document.getElementById('status-filter').value;
+        function openChat(id) {
+            currentRequestId = id;
+            const req = allRequests.find(r => r.id === id);
+            if (!req) return;
 
-            const filtered = allRequests.filter(r => {
-                const matchesQuery = (r.nom_complet || '').toLowerCase().includes(query) ||
-                                     (r.email || '').toLowerCase().includes(query) ||
-                                     (r.whatsapp || '').toLowerCase().includes(query);
-                const matchesStatus = status === 'ALL' || r.statut === status;
-                return matchesQuery && matchesStatus;
+            document.getElementById('chat-client-name').textContent = `Discussion avec ${req.nom_complet}`;
+            
+            const attachContainer = document.getElementById('chat-attachment-container');
+            const attachLink = document.getElementById('chat-attachment-link');
+            if (req.piece_jointe) {
+                attachLink.href = req.piece_jointe;
+                attachContainer.classList.remove('hidden');
+            } else {
+                attachContainer.classList.add('hidden');
+            }
+
+            renderMessages(req.messages || []);
+            document.getElementById('chat-modal').classList.remove('hidden');
+        }
+
+        function closeChat() {
+            document.getElementById('chat-modal').classList.add('hidden');
+            currentRequestId = null;
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '';
+            if (messages.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-500 py-4">Aucun message pour le moment.</p>`;
+                return;
+            }
+            messages.forEach(m => {
+                const div = document.createElement('div');
+                div.className = `p-2.5 rounded-lg max-w-[80%] ${m.sender === 'admin' ? 'bg-gold-500/20 border border-gold-500/30 ml-auto text-right' : 'bg-navy-900 border border-slate-700 mr-auto'}`;
+                div.innerHTML = `<p class="text-[10px] text-slate-400 font-bold mb-0.5">${m.sender === 'admin' ? 'Administrateur' : 'Client'}</p><p class="text-white">${m.text}</p>`;
+                container.appendChild(div);
             });
-            renderRequests(filtered);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendAdminMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('admin-msg-input');
+            const text = input.value.trim();
+            if (!text || !currentRequestId) return;
+
+            const req = allRequests.find(r => r.id === currentRequestId);
+            const messages = req.messages || [];
+            messages.push({ sender: 'admin', text: text, time: new Date().toISOString() });
+
+            const { error } = await supabaseClient.from('demandes').update({ messages: messages }).eq('id', currentRequestId);
+            if (!error) {
+                input.value = '';
+                loadRequests().then(() => openChat(currentRequestId));
+            }
         }
 
         async function updateStatus(id, newStatus) {
@@ -266,7 +330,7 @@
         }
 
         async function deleteRequest(id) {
-            if (!confirm("Voulez-vous vraiment supprimer cette demande ?")) return;
+            if (!confirm("Supprimer cette demande ?")) return;
             await supabaseClient.from('demandes').delete().eq('id', id);
             loadRequests();
         }
