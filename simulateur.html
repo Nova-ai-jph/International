@@ -22,9 +22,6 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <!-- Google Translate Script -->
     <script type="text/javascript">
         function googleTranslateElementInit() {
@@ -72,7 +69,7 @@
                 <!-- Sélecteur de Langue & CTA -->
                 <div class="hidden lg:flex items-center space-x-4">
                     <div id="google_translate_element"></div>
-                    <a href="#demande-section" class="bg-gold-500 hover:bg-gold-600 text-navy-950 font-semibold px-5 py-2.5 rounded-lg transition shadow-sm">
+                    <a href="contact.html#demande" class="bg-gold-500 hover:bg-gold-600 text-navy-950 font-semibold px-5 py-2.5 rounded-lg transition shadow-sm">
                         Faire une demande
                     </a>
                 </div>
@@ -90,12 +87,11 @@
             <a href="index.html#solutions" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Nos solutions</a>
             <a href="simulateur.html" class="block px-3 py-2 rounded-md text-base font-medium text-gold-400">Simulateur</a>
             <a href="contact.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Contact</a>
-            <a href="#demande-section" class="block w-full text-center bg-gold-500 text-navy-950 font-semibold py-3 rounded-lg">Faire une demande</a>
+            <a href="contact.html#demande" class="block w-full text-center bg-gold-500 text-navy-950 font-semibold py-3 rounded-lg">Faire une demande</a>
         </div>
     </header>
 
-    <main class="py-12 bg-slate-100 flex-grow space-y-12">
-        <!-- SIMULATEUR -->
+    <main class="py-12 bg-slate-100 flex-grow">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-navy-900 text-white rounded-2xl p-6 sm:p-10 shadow-xl border border-slate-800">
                 
@@ -148,10 +144,10 @@
                         <div>
                             <label class="block text-sm font-medium mb-2">Type de financement</label>
                             <select id="sim-type" class="w-full bg-navy-950 border border-slate-700 rounded-lg p-3 text-white text-sm focus:outline-none">
-                                <option value="Prêt personnel">Prêt personnel</option>
-                                <option value="Prêt projet">Prêt pour un projet</option>
-                                <option value="Prêt immobilier">Prêt immobilier</option>
-                                <option value="Prêt automobile">Prêt automobile</option>
+                                <option value="personnel">Prêt personnel</option>
+                                <option value="projet">Prêt pour un projet</option>
+                                <option value="immobilier">Prêt immobilier</option>
+                                <option value="auto">Prêt automobile</option>
                             </select>
                         </div>
                     </div>
@@ -177,41 +173,11 @@
                             <div id="res-monthly" class="text-2xl sm:text-3xl font-extrabold text-gold-400">--</div>
                         </div>
 
-                        <a href="#demande-section" class="w-full bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold py-3 rounded-lg transition shadow text-center block text-sm mt-4">
-                            Soumettre cette simulation
+                        <a href="contact.html#demande" class="w-full bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold py-3 rounded-lg transition shadow text-center block text-sm mt-4">
+                            Continuer ma demande
                         </a>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- FORMULAIRE DE SOUMISSION CLIENT -> SUPABASE -->
-        <div id="demande-section" class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-navy-900 text-white p-8 rounded-2xl border border-slate-800 shadow-xl">
-                <div class="text-center mb-6">
-                    <h2 class="text-xl font-bold">Finaliser votre demande de prêt</h2>
-                    <p class="text-xs text-slate-400 mt-1">Remplissez vos coordonnées pour recevoir une réponse rapide de notre service financier.</p>
-                </div>
-
-                <form id="loan-form" onsubmit="submitLoanRequest(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Nom complet</label>
-                        <input type="text" id="client-nom" required placeholder="Ex: Jean Dupont" class="w-full bg-navy-950 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-gold-500">
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Adresse E-mail</label>
-                            <input type="email" id="client-email" required placeholder="jean@example.com" class="w-full bg-navy-950 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-gold-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Numéro WhatsApp</label>
-                            <input type="text" id="client-whatsapp" required placeholder="+229 01020304" class="w-full bg-navy-950 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-gold-500">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold py-3 rounded-lg transition shadow text-sm">
-                        Envoyer ma demande à la Banque
-                    </button>
-                </form>
             </div>
         </div>
     </main>
@@ -222,28 +188,24 @@
     </footer>
 
     <script>
-        // CONFIGURATION SUPABASE
-        const SUPABASE_URL = "https://ibrbrpctifzrksfsqbiv.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_0Wbabg9JV5RrfWkm_PoIhw_xyXFNsiy";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         let userCurrency = "FCFA";
         let currencyCode = "FCFA";
 
+        // Détection automatique intelligente multirégionale
         function autoDetectCurrency() {
             try {
                 const lang = navigator.language || 'fr-FR';
                 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
 
-                if (lang.includes('PR') || lang.includes('US') || lang.includes('en-US')) {
+                if (lang.includes('PR') || lang.includes('es-PR') || lang.includes('US') || lang.includes('en-US')) {
                     setCurrencyConfig("USD", "$ USD", 1000, 100000, 10000, 1000);
-                } else if (lang.includes('MX')) {
+                } else if (lang.includes('MX') || lang.includes('es-MX')) {
                     setCurrencyConfig("MXN", "$ MXN", 10000, 1000000, 100000, 5000);
-                } else if (lang.includes('CA')) {
+                } else if (lang.includes('CA') || lang.includes('en-CA')) {
                     setCurrencyConfig("CAD", "$ CAD", 1000, 100000, 10000, 1000);
-                } else if (lang.includes('GB')) {
+                } else if (lang.includes('GB') || lang.includes('en-GB')) {
                     setCurrencyConfig("GBP", "£", 1000, 100000, 10000, 1000);
-                } else if (lang.includes('BJ') || lang.includes('CI') || lang.includes('SN') || lang.includes('CM') || timeZone.includes('Africa')) {
+                } else if (lang.includes('BJ') || lang.includes('CI') || lang.includes('SN') || lang.includes('CM') || lang.includes('TG') || lang.includes('BF') || timeZone.includes('Africa')) {
                     setCurrencyConfig("FCFA", "FCFA", 100000, 50000000, 5000000, 100000);
                 } else {
                     setCurrencyConfig("EUR", "€", 1000, 100000, 10000, 1000);
@@ -287,7 +249,7 @@
         function calculateLoan() {
             const P = parseFloat(amountInput.value);
             const n = parseInt(durationInput.value);
-            const r = 0.05 / 12;
+            const r = 0.05 / 12; // Taux d'intérêt fixe annuel de 5%
 
             const monthlyPayment = (P * r) / (1 - Math.pow(1 + r, -n));
             const totalRepaid = monthlyPayment * n;
@@ -311,43 +273,9 @@
         
         autoDetectCurrency();
 
-        // Fonction d'envoi vers Supabase
-        async function submitLoanRequest(e) {
-            e.preventDefault();
-
-            const nom = document.getElementById('client-nom').value;
-            const email = document.getElementById('client-email').value;
-            const whatsapp = document.getElementById('client-whatsapp').value;
-            const typePret = document.getElementById('sim-type').value;
-            const montantSimule = document.getElementById('amount-val').textContent;
-
-            const { data, error } = await supabaseClient
-                .from('demandes')
-                .insert([
-                    { 
-                        nom_complet: nom, 
-                        email: email, 
-                        whatsapp: whatsapp, 
-                        type_pret: typePret, 
-                        montant: montantSimule, 
-                        devise: currencyCode,
-                        statut: 'En attente'
-                    }
-                ]);
-
-            if (error) {
-                console.error("Erreur d'insertion :", error);
-                alert("Une erreur est survenue lors de l'envoi de votre demande. Veuillez réessayer.");
-            } else {
-                alert("Votre demande de prêt a été transmise avec succès ! Notre équipe vous contactera bientôt.");
-                document.getElementById('loan-form').reset();
-            }
-        }
-
         document.getElementById('mobile-menu-btn').addEventListener('click', () => {
             document.getElementById('mobile-menu').classList.toggle('hidden');
         });
     </script>
 </body>
-    </html>
-    
+</html>
