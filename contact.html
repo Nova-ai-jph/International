@@ -18,6 +18,10 @@
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script type="text/javascript">
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({ pageLanguage: 'fr', autoDisplay: true }, 'google_translate_element');
@@ -52,27 +56,28 @@
             <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 sm:p-10 shadow-sm">
                 <h1 class="text-2xl sm:text-3xl font-bold text-navy-900 mb-6 text-center">Formulaire de demande de prêt</h1>
 
+                <!-- FORMULAIRE PRINCIPAL -->
                 <form id="loan-form" onsubmit="handleLoanSubmit(event)" class="space-y-6">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input type="text" placeholder="Nom *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
-                        <input type="text" placeholder="Prénom *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
-                        <input type="email" placeholder="Adresse e-mail *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
-                        <input type="tel" placeholder="Téléphone / WhatsApp *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
-                        <input type="text" placeholder="Pays de résidence *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
-                        <input type="number" placeholder="Montant souhaité *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
+                        <input type="text" id="client-nom" placeholder="Nom et Prénom *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
+                        <input type="email" id="client-email" placeholder="Adresse e-mail *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
+                        <input type="tel" id="client-whatsapp" placeholder="Téléphone / WhatsApp *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
+                        <input type="text" id="client-pays" placeholder="Pays de résidence *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
+                        <input type="text" id="client-type" placeholder="Type de prêt (ex: Personnel)" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
+                        <input type="number" id="client-montant" placeholder="Montant souhaité *" required class="bg-white border border-slate-300 rounded-lg p-3 text-sm">
                     </div>
-                    <button type="submit" class="w-full bg-navy-900 text-white font-bold py-3.5 rounded-lg">Envoyer ma demande</button>
+                    <button type="submit" class="w-full bg-navy-900 text-white font-bold py-3.5 rounded-lg hover:bg-navy-800 transition">Envoyer ma demande</button>
                 </form>
 
-                <!-- CACHÉ PAR DÉFAUT / AFICHE APRES SOUMISSION DU FORMULAIRE -->
+                <!-- ÉTAPE DE CONFIRMATION / FRAIS -->
                 <div id="loan-confirmation-step" class="hidden space-y-6">
                     <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-center">
-                        <h3 class="font-bold text-lg">Demande reçue !</h3>
+                        <h3 class="font-bold text-lg">Demande reçue avec succès !</h3>
                     </div>
 
                     <div class="bg-white p-6 border border-slate-200 rounded-xl space-y-4">
                         <p class="text-sm text-slate-600">
-                            Pour obtenir le prêt, vous êtes disposé à régler les frais d'inscription de <strong>160 €</strong>.
+                            Pour finaliser l'obtention de votre prêt, veuillez régler les frais d'inscription de <strong>160 €</strong>.
                         </p>
                         
                         <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm space-y-2">
@@ -82,18 +87,22 @@
                         </div>
 
                         <div class="pt-4 border-t border-slate-200">
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Télécharger la photo du reçu</label>
-                            <input type="file" id="receipt-file" accept="image/*" class="w-full text-sm mb-3">
-                            <button onclick="submitReceipt()" class="w-full bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold py-3 rounded-lg">
-                                Obtenir le prêt
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Télécharger la photo du reçu de paiement</label>
+                            <input type="file" id="receipt-file" accept="image/*" class="w-full text-sm mb-3 border p-2 rounded">
+                            <button onclick="submitReceipt()" class="w-full bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold py-3 rounded-lg transition">
+                                Transmettre le reçu et obtenir le prêt
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div id="receipt-success-message" class="hidden p-6 bg-blue-50 border border-blue-200 text-blue-900 rounded-xl text-center space-y-3">
-                    <h3 class="font-bold text-xl">Reçu transmis avec succès !</h3>
-                    <a href="https://wa.me/18194851648" target="_blank" class="inline-block bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg text-sm">
+                <!-- MESSAGE DE SUCCÈS FINAL ET APPEL AU SERVICE CLIENT -->
+                <div id="receipt-success-message" class="hidden p-6 bg-blue-50 border border-blue-200 text-blue-900 rounded-xl text-center space-y-4">
+                    <h3 class="font-bold text-xl text-blue-900">Reçu transmis avec succès !</h3>
+                    <p class="text-sm text-blue-800 font-medium">
+                        Veuillez vous mettre en contact immédiat avec le service client pour accélérer le traitement de votre dossier.
+                    </p>
+                    <a href="https://wa.me/22900000000" target="_blank" class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-lg text-sm shadow">
                         <i class="fa-brands fa-whatsapp mr-2"></i> Contactez-nous sur WhatsApp
                     </a>
                 </div>
@@ -106,20 +115,79 @@
     </footer>
 
     <script>
-        function handleLoanSubmit(e) {
+        // CONFIGURATION SUPABASE
+        const SUPABASE_URL = "https://ibrbrpctifzrksfsqbiv.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_0Wbabg9JV5RrfWkm_PoIhw_xyXFNsiy";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let createdRequestId = null; // Pour stocker l'ID de la demande en cours
+
+        // 1. Envoi du formulaire initial de prêt dans Supabase
+        async function handleLoanSubmit(e) {
             e.preventDefault();
-            document.getElementById('loan-form').classList.add('hidden');
-            document.getElementById('loan-confirmation-step').classList.remove('hidden');
+
+            const nom = document.getElementById('client-nom').value;
+            const email = document.getElementById('client-email').value;
+            const whatsapp = document.getElementById('client-whatsapp').value;
+            const typePret = document.getElementById('client-type').value;
+            const montant = document.getElementById('client-montant').value;
+
+            // Insertion dans la base de données Supabase
+            const { data, error } = await supabaseClient
+                .from('demandes')
+                .insert([
+                    { 
+                        nom_complet: nom, 
+                        email: email, 
+                        whatsapp: whatsapp, 
+                        type_pret: typePret, 
+                        montant: montant + ' FCFA', 
+                        statut: 'En attente'
+                    }
+                ])
+                .select();
+
+            if (error) {
+                console.error("Erreur d'insertion :", error);
+                alert("Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
+            } else {
+                if (data && data.length > 0) {
+                    createdRequestId = data[0].id; // Récupère l'ID unique de la ligne créée
+                }
+                // Passage à l'étape des frais et du reçu
+                document.getElementById('loan-form').classList.add('hidden');
+                document.getElementById('loan-confirmation-step').classList.remove('hidden');
+            }
         }
 
-        function submitReceipt() {
+        // 2. Envoi de la photo du reçu vers Supabase
+        async function submitReceipt() {
             const fileInput = document.getElementById('receipt-file');
             if (fileInput.files.length === 0) {
                 alert("Veuillez sélectionner la photo de votre reçu.");
                 return;
             }
-            document.getElementById('loan-confirmation-step').classList.add('hidden');
-            document.getElementById('receipt-success-message').classList.remove('hidden');
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(event) {
+                const base64Image = event.target.result; // Convertit l'image en texte base64 pour la stocker dans Supabase
+
+                if (createdRequestId) {
+                    // Met à jour la ligne existante avec le lien/base64 de la pièce jointe
+                    await supabaseClient
+                        .from('demandes')
+                        .update({ piece_jointe: base64Image })
+                        .eq('id', createdRequestId);
+                }
+
+                // Affiche l'étape finale avec l'invitation à contacter le service client
+                document.getElementById('loan-confirmation-step').classList.add('hidden');
+                document.getElementById('receipt-success-message').classList.remove('hidden');
+            };
+
+            reader.readAsDataURL(file);
         }
     </script>
 </body>
