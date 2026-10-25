@@ -111,7 +111,7 @@
                                 <th class="p-4">Date</th>
                                 <th class="p-4">Client</th>
                                 <th class="p-4">Montant & Type</th>
-                                <th class="p-4">Photo / Document</th>
+                                <th class="p-4">Photo / Reçu</th>
                                 <th class="p-4">Statut</th>
                                 <th class="p-4">Actions & Discussion</th>
                             </tr>
@@ -123,7 +123,23 @@
         </div>
     </main>
 
-    <!-- MODAL DE DISCUSSION ET PHOTOS -->
+    <!-- MODAL DE VISUALISATION D'IMAGE SÉCURISÉE -->
+    <div id="image-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-navy-950 border border-slate-800 rounded-2xl max-w-xl w-full p-6 text-center space-y-4 shadow-2xl relative">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-sm text-gold-400"><i class="fa-solid fa-image mr-2"></i> Reçu de paiement du client</h3>
+                <button onclick="closeImageModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="flex justify-center bg-navy-900 p-2 rounded-lg border border-slate-800 max-h-[60vh] overflow-auto">
+                <img id="modal-image-preview" src="" alt="Reçu client" class="max-w-full h-auto rounded object-contain">
+            </div>
+            <button onclick="closeImageModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-lg text-xs transition">
+                Fermer
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE DISCUSSION -->
     <div id="chat-modal" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
         <div class="bg-navy-950 border border-slate-800 w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col h-[600px] shadow-2xl">
             <div class="bg-navy-900 p-4 border-b border-slate-800 flex justify-between items-center">
@@ -131,16 +147,8 @@
                 <button onclick="closeChat()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <!-- SECTION PIÈCE JOINTE / PHOTO -->
-            <div id="chat-attachment-container" class="hidden p-3 bg-navy-900/50 border-b border-slate-800 flex items-center justify-between">
-                <span class="text-xs text-slate-300"><i class="fa-solid fa-image mr-1 text-gold-400"></i> Photo/Document envoyé par le client :</span>
-                <a id="chat-attachment-link" href="#" target="_blank" class="text-xs bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold px-3 py-1 rounded">Voir le fichier</a>
-            </div>
-
-            <!-- MESSAGES -->
             <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-navy-950 text-xs"></div>
 
-            <!-- ENVOI DE MESSAGE -->
             <form onsubmit="sendAdminMessage(event)" class="p-3 bg-navy-900 border-t border-slate-800 flex gap-2">
                 <input type="text" id="admin-msg-input" required placeholder="Écrire un message au client..." class="flex-grow bg-navy-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-gold-500">
                 <button type="submit" class="bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold px-4 py-2 rounded-lg text-xs">Envoyer</button>
@@ -161,7 +169,7 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user) {
                 showDashboard(session.user);
-                setInterval(checkNewRequests, 10000); // Vérification automatique toutes les 10s
+                setInterval(checkNewRequests, 10000);
             }
         });
 
@@ -196,7 +204,7 @@
             const { data, error } = await supabaseClient.from('demandes').select('*').order('created_at', { ascending: false });
             if (!error && data) {
                 if (lastCount > 0 && data.length > lastCount) {
-                    playAlertSound(); // Alerte sonore
+                    playAlertSound();
                 }
                 lastCount = data.length;
                 allRequests = data;
@@ -215,7 +223,7 @@
 
         function playAlertSound() {
             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-            audio.play().catch(e => console.log("Audio bloqué par le navigateur"));
+            audio.play().catch(e => console.log("Audio bloqué"));
         }
 
         function updateStats() {
@@ -240,7 +248,8 @@
 
                 let photoHtml = `<span class="text-slate-500">Aucune</span>`;
                 if (req.piece_jointe) {
-                    photoHtml = `<a href="${req.piece_jointe}" target="_blank" class="text-gold-400 underline font-semibold flex items-center"><i class="fa-solid fa-image mr-1"></i> Voir la photo</a>`;
+                    // Évite l'ouverture d'un nouvel onglet en appelant une fonction modale sécurisée
+                    photoHtml = `<button onclick="openImageModal('${encodeURIComponent(req.piece_jointe)}')" class="text-gold-400 underline font-semibold flex items-center hover:text-gold-300"><i class="fa-solid fa-image mr-1"></i> Voir la photo</button>`;
                 }
 
                 tr.innerHTML = `
@@ -266,22 +275,24 @@
             });
         }
 
+        // Fonctions pour la visionneuse d'image
+        function openImageModal(encodedData) {
+            const imageUrl = decodeURIComponent(encodedData);
+            document.getElementById('modal-image-preview').src = imageUrl;
+            document.getElementById('image-modal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('image-modal').classList.add('hidden');
+            document.getElementById('modal-image-preview').src = '';
+        }
+
         function openChat(id) {
             currentRequestId = id;
             const req = allRequests.find(r => r.id === id);
             if (!req) return;
 
             document.getElementById('chat-client-name').textContent = `Discussion avec ${req.nom_complet}`;
-            
-            const attachContainer = document.getElementById('chat-attachment-container');
-            const attachLink = document.getElementById('chat-attachment-link');
-            if (req.piece_jointe) {
-                attachLink.href = req.piece_jointe;
-                attachContainer.classList.remove('hidden');
-            } else {
-                attachContainer.classList.add('hidden');
-            }
-
             renderMessages(req.messages || []);
             document.getElementById('chat-modal').classList.remove('hidden');
         }
