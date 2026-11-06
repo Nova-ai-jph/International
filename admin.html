@@ -38,6 +38,7 @@
     .action-btn { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; margin-right: 5px; }
     .btn-approve { background-color: #16a34a; color: white; }
     .btn-reject { background-color: #dc2626; color: white; }
+    img.receipt-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #cbd5e1; }
   </style>
 </head>
 <body>
@@ -66,21 +67,22 @@
       <button class="btn btn-logout" id="logoutBtn">Déconnexion</button>
     </div>
 
-    <h3>Demandes de Prêts Reçues</h3>
+    <h3>Demandes de Prêts Reçues (Table : demandes)</h3>
     <table>
       <thead>
         <tr>
           <th>Date</th>
           <th>Client</th>
-          <th>Montant</th>
-          <th>Durée</th>
+          <th>Contact / WhatsApp</th>
+          <th>Type & Montant</th>
+          <th>Reçu</th>
           <th>Statut</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody id="loansTableBody">
         <tr>
-          <td colspan="6" style="text-align: center; color: #64748b;">Chargement des données...</td>
+          <td colspan="7" style="text-align: center; color: #64748b;">Chargement des données...</td>
         </tr>
       </tbody>
     </table>
@@ -143,49 +145,55 @@
       passwordInput.value = '';
     });
 
-    // --- AFFICHAGE DU TABLEAU DE BORD & CHARGEMENT DES PRÊTS ---
+    // --- AFFICHAGE DU TABLEAU DE BORD & CHARGEMENT DES DEMANDES ---
     function showDashboard() {
       loginContainer.style.display = 'none';
       dashboardCard.style.display = 'block';
-      loadLoans();
+      loadDemandes();
     }
 
-    async function loadLoans() {
-      // Remplacez 'loans' par le nom exact de votre table SQL dans Supabase si besoin
+    async function loadDemandes() {
       const { data, error } = await supabaseClient
-        .from('loans')
+        .from('demandes')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
-        loansTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Erreur de chargement des prêts (Vérifiez le nom de votre table).</td></tr>`;
+        loansTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Erreur de chargement : ${error.message}</td></tr>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        loansTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b;">Aucune demande de prêt pour le moment.</td></tr>`;
+        loansTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #64748b;">Aucune demande de prêt pour le moment.</td></tr>`;
         return;
       }
 
       loansTableBody.innerHTML = '';
-      data.forEach(loan => {
-        const dateStr = new Date(loan.created_at).toLocaleDateString('fr-FR');
-        const statusBadge = loan.status === 'approved' 
-          ? '<span class="badge badge-approved">Approuvée</span>' 
-          : loan.status === 'rejected' 
-          ? '<span class="badge badge-rejected">Rejetée</span>' 
-          : '<span class="badge badge-pending">En attente</span>';
+      data.forEach(item => {
+        const dateStr = item.created_at ? new Date(item.created_at).toLocaleDateString('fr-FR') : 'N/A';
+        
+        let statusBadge = '<span class="badge badge-pending">En attente</span>';
+        if (item.statut === 'Approuvée' || item.statut === 'approved') {
+          statusBadge = '<span class="badge badge-approved">Approuvée</span>';
+        } else if (item.statut === 'Rejetée' || item.statut === 'rejected') {
+          statusBadge = '<span class="badge badge-rejected">Rejetée</span>';
+        }
+
+        const receiptHtml = item.piece_jointe 
+          ? `<a href="${item.piece_jointe}" target="_blank"><img src="${item.piece_jointe}" class="receipt-thumb" title="Voir le reçu"></a>` 
+          : '<span style="color:#94a3b8; font-size:11px;">Aucun</span>';
 
         const row = `
           <tr>
             <td>${dateStr}</td>
-            <td>${loan.full_name || loan.email || 'Client'}</td>
-            <td>${loan.amount} FCFA</td>
-            <td>${loan.duration} mois</td>
+            <td><strong>${item.nom_complet || 'N/A'}</strong><br><small style="color:#64748b;">${item.email || ''}</small></td>
+            <td>${item.whatsapp || 'N/A'}</td>
+            <td>${item.type_pret || 'Prêt'} <br><strong>${item.montant || ''}</strong></td>
+            <td>${receiptHtml}</td>
             <td>${statusBadge}</td>
             <td>
-              <button class="action-btn btn-approve" onclick="updateStatus('${loan.id}', 'approved')">Valider</button>
-              <button class="action-btn btn-reject" onclick="updateStatus('${loan.id}', 'rejected')">Rejeter</button>
+              <button class="action-btn btn-approve" onclick="updateStatus('${item.id}', 'Approuvée')">Valider</button>
+              <button class="action-btn btn-reject" onclick="updateStatus('${item.id}', 'Rejetée')">Rejeter</button>
             </td>
           </tr>
         `;
@@ -193,17 +201,17 @@
       });
     }
 
-    // --- MISE À JOUR DU STATUT D'UN PRÊT ---
+    // --- MISE À JOUR DU STATUT ---
     window.updateStatus = async function(id, newStatus) {
       const { error } = await supabaseClient
-        .from('loans')
-        .update({ status: newStatus })
+        .from('demandes')
+        .update({ statut: newStatus })
         .eq('id', id);
 
       if (error) {
         alert("Erreur lors de la mise à jour : " + error.message);
       } else {
-        loadLoans(); // Recharge le tableau en direct
+        loadDemandes(); // Recharge le tableau en direct
       }
     }
   </script>
