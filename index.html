@@ -1,223 +1,309 @@
 <!DOCTYPE html>
-<html lang="fr" class="scroll-smooth">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banque International — Accueil & Solutions de Financement</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration - Banque Internationale</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f4f6f9; color: #333; padding: 20px; }
     
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        navy: { 800: '#0a192f', 900: '#020c1b', 950: '#010610' },
-                        gold: { 400: '#fbbf24', 500: '#d97706', 600: '#b45309' }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Translate Script -->
-    <script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({ pageLanguage: 'fr', autoDisplay: true }, 'google_translate_element');
-        }
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    /* Écran de connexion */
+    .login-container { display: flex; justify-content: center; align-items: center; min-height: 90vh; }
+    .login-card { background: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+    .login-card h2 { margin-bottom: 20px; color: #1e293b; }
+    .form-group { margin-bottom: 15px; text-align: left; }
+    .form-group label { display: block; font-size: 14px; margin-bottom: 5px; color: #64748b; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; }
+    .btn { padding: 12px; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; width: 100%; }
+    .btn:hover { background-color: #1d4ed8; }
+    .error-msg { color: #ef4444; font-size: 14px; margin-top: 15px; display: none; }
 
-    <style>
-        .goog-te-gadget-simple {
-            background-color: #020c1b !important;
-            border: 1px solid rgba(251, 191, 36, 0.3) !important;
-            padding: 6px 12px !important;
-            border-radius: 8px !important;
-            font-size: 14px !important;
-        }
-        .goog-te-gadget-simple span { color: #ffffff !important; }
-        .goog-te-banner-frame { display: none !important; }
-        body { top: 0px !important; }
-    </style>
+    /* Tableau de bord */
+    .dashboard { display: none; max-width: 1300px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
+    .btn-logout { background-color: #dc2626; padding: 8px 16px; font-size: 14px; width: auto; }
+    .btn-logout:hover { background-color: #b91c1c; }
+
+    /* Notification Banner */
+    #notif-banner { display: none; background-color: #dcfce7; border: 1px solid #16a34a; color: #166534; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; }
+
+    /* Tableaux et sections */
+    h3 { margin-bottom: 15px; color: #1e293b; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+    th { background-color: #f8fafc; color: #475569; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    .badge-pending { background-color: #fef3c7; color: #d97706; }
+    .badge-approved { background-color: #dcfce7; color: #16a34a; }
+    .badge-rejected { background-color: #fee2e2; color: #dc2626; }
+    
+    .action-btn { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; margin-right: 4px; margin-bottom: 4px; display: inline-block; text-decoration: none; text-align: center; }
+    .btn-approve { background-color: #16a34a; color: white; }
+    .btn-reject { background-color: #dc2626; color: white; }
+    .btn-whatsapp { background-color: #25d366; color: white; }
+    .btn-chat { background-color: #020c1b; color: white; }
+    .btn-delete { background-color: #64748b; color: white; }
+    .btn-delete:hover { background-color: #475569; }
+    img.receipt-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #cbd5e1; }
+
+    /* Modal de Chat */
+    #chat-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+    .chat-container { background: #020c1b; width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 550px; border: 1px solid #1e293b; }
+    .chat-header { background: #0a192f; padding: 15px; color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; }
+    .chat-messages { flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+    .chat-input-area { padding: 15px; background: #0a192f; display: flex; gap: 10px; border-top: 1px solid #1e293b; }
+    .chat-input-area input { flex-grow: 1; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #020c1b; color: white; font-size: 13px; }
+    .chat-input-area button { padding: 10px 15px; background: #fbbf24; color: #020c1b; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased flex flex-col min-h-screen">
+<body>
 
-    <!-- EN-TÊTE ET NAVIGATION -->
-    <header class="bg-navy-900 text-white sticky top-0 z-50 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                
-                <!-- LOGO DE LA BANQUE INTERNATIONAL -->
-                <a href="index.html" class="flex items-center space-x-3">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-lg bg-navy-800 border border-gold-500/30 overflow-hidden p-1">
-                        <img src="logo.png" alt="Logo Banque International" class="max-w-full max-h-full object-contain mx-auto my-auto">
-                    </div>
-                    <span class="font-bold text-lg sm:text-xl tracking-wider text-slate-100">BANQUE <span class="text-gold-400">INTERNATIONAL</span></span>
-                </a>
+  <!-- 1. FORMULAIRE DE CONNEXION -->
+  <div class="login-container" id="loginContainer">
+    <div class="login-card">
+      <h2>Connexion Admin</h2>
+      <div class="form-group">
+        <label for="email">Adresse E-mail</label>
+        <input type="email" id="email" placeholder="admin@banque.com" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+      <button type="button" class="btn" id="loginBtn">Se connecter</button>
+      <div class="error-msg" id="errorMsg"></div>
+    </div>
+  </div>
 
-                <!-- Navigation Desktop -->
-                <nav class="hidden lg:flex items-center space-x-6 text-sm font-medium">
-                    <a href="index.html#accueil" class="text-gold-400 font-bold">Accueil</a>
-                    <a href="index.html#solutions" class="hover:text-gold-400 transition-colors">Nos solutions</a>
-                    <a href="simulateur.html" class="hover:text-gold-400 transition-colors">Simulateur</a>
-                    <a href="contact.html" class="hover:text-gold-400 transition-colors">Contact</a>
-                </nav>
+  <!-- 2. TABLEAU DE BORD ADMINISTRATEUR -->
+  <div class="dashboard" id="dashboardCard">
+    <div class="dashboard-header">
+      <h2>Tableau de Bord - Banque Internationale</h2>
+      <button class="btn btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
 
-                <!-- Selecteur de Langue & Bouton CTA -->
-                <div class="hidden lg:flex items-center space-x-4">
-                    <div id="google_translate_element"></div>
-                    <a href="contact.html#demande" class="bg-gold-500 hover:bg-gold-600 text-navy-950 font-semibold px-5 py-2.5 rounded-lg transition shadow-sm">
-                        Faire une demande
-                    </a>
-                </div>
+    <!-- BANNIÈRE DE NOTIFICATION -->
+    <div id="notif-banner">
+      <i class="fa-solid fa-bell mr-2"></i> <span id="notif-text">Nouvelle activité détectée sur le site !</span>
+    </div>
 
-                <!-- Menu Hamburger Mobile -->
-                <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-slate-300 hover:text-white">
-                    <i class="fa-solid fa-bars text-2xl"></i>
-                </button>
-            </div>
-        </div>
+    <h3>Demandes de Prêts & Interactions Clients</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Client</th>
+          <th>Contact / WhatsApp</th>
+          <th>Prêt & Montant</th>
+          <th>Reçu</th>
+          <th>Statut</th>
+          <th>Actions & Chat</th>
+        </tr>
+      </thead>
+      <tbody id="loansTableBody">
+        <tr>
+          <td colspan="7" style="text-align: center; color: #64748b;">Chargement des données...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-        <!-- Menu Mobile -->
-        <div id="mobile-menu" class="hidden lg:hidden bg-navy-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-3">
-            <a href="index.html#accueil" class="block px-3 py-2 rounded-md text-base font-medium text-gold-400">Accueil</a>
-            <a href="index.html#solutions" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Nos solutions</a>
-            <a href="simulateur.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Simulateur</a>
-            <a href="contact.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-navy-800">Contact</a>
-            <a href="contact.html#demande" class="block w-full text-center bg-gold-500 text-navy-950 font-semibold py-3 rounded-lg">Faire une demande</a>
-        </div>
-    </header>
+  <!-- MODAL DE DISCUSSION EN DIRECT -->
+  <div id="chat-modal">
+    <div class="chat-container">
+      <div class="chat-header">
+        <span id="chat-client-title" class="font-bold text-gold-400">Discussion avec le client</span>
+        <button onclick="closeChatModal()" class="text-slate-400 hover:text-white font-bold"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div id="chat-messages-box" class="chat-messages">
+        <!-- Messages injectés ici -->
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="admin-chat-input" placeholder="Écrire un message au client...">
+        <button onclick="sendAdminMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
 
-    <main class="flex-grow">
-        <!-- SECTION ACCUEIL AVEC PHOTO EN ARRIÈRE-PLAN -->
-        <section id="accueil" class="relative bg-navy-900 text-white py-20 lg:py-32 overflow-hidden bg-cover bg-center bg-no-repeat" style="background-image: linear-gradient(to right, rgba(2, 12, 27, 0.9), rgba(2, 12, 27, 0.75)), url('hero-bg.jpg');">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    <div>
-                        <span class="inline-block px-3 py-1 bg-navy-800/80 border border-gold-500/30 text-gold-400 text-xs font-semibold rounded-full uppercase tracking-wider mb-4 backdrop-blur-sm">
-                            Accompagnement Financier International
-                        </span>
-                        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight mb-6">
-                            Votre projet mérite une solution de financement adaptée
-                        </h1>
-                        <p class="text-lg text-slate-200 mb-8 leading-relaxed">
-                            Découvrez nos solutions de financement et transmettez votre demande en ligne en quelques étapes simples. Chaque demande est étudiée selon les conditions applicables et votre situation.
-                        </p>
-                        <div class="flex flex-col sm:flex-row gap-4">
-                            <a href="simulateur.html" class="inline-flex justify-center items-center px-6 py-3.5 bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold rounded-lg transition shadow-lg">
-                                <i class="fa-solid fa-calculator mr-2"></i> Simuler mon prêt
-                            </a>
-                            <a href="contact.html" class="inline-flex justify-center items-center px-6 py-3.5 bg-navy-800/90 text-white font-medium border border-slate-700 rounded-lg transition hover:bg-navy-800">
-                                <i class="fa-solid fa-envelope mr-2"></i> Nous contacter
-                            </a>
-                        </div>
-                    </div>
+  <script>
+    // --- INITIALISATION SUPABASE ---
+    const SUPABASE_URL = "https://ibrbrpctifzrksfsqbiv.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_0Wbabg9JV5RrfWkm_PoIhw_xyXFNsiy";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                    <!-- Présentation des Avantages -->
-                    <div class="bg-navy-950/70 backdrop-blur-md rounded-2xl p-6 border border-slate-700/60 shadow-2xl">
-                        <div class="space-y-4">
-                            <div class="bg-navy-900/80 p-4 rounded-xl border border-slate-800 flex items-center space-x-4">
-                                <div class="p-3 bg-blue-500/10 text-blue-400 rounded-lg"><i class="fa-solid fa-laptop-code text-xl"></i></div>
-                                <div>
-                                    <h4 class="font-semibold text-sm">Démarche en ligne simple</h4>
-                                    <p class="text-xs text-slate-300">Soumettez votre demande facilement à tout moment.</p>
-                                </div>
-                            </div>
-                            <div class="bg-navy-900/80 p-4 rounded-xl border border-slate-800 flex items-center space-x-4">
-                                <div class="p-3 bg-gold-500/10 text-gold-400 rounded-lg"><i class="fa-solid fa-circle-info text-xl"></i></div>
-                                <div>
-                                    <h4 class="font-semibold text-sm">Transparence des conditions</h4>
-                                    <p class="text-xs text-slate-300">Des informations claires transmises dès la soumission.</p>
-                                </div>
-                            </div>
-                            <div class="bg-navy-900/80 p-4 rounded-xl border border-slate-800 flex items-center space-x-4">
-                                <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg"><i class="fa-solid fa-user-shield text-xl"></i></div>
-                                <div>
-                                    <h4 class="font-semibold text-sm">Accompagnement dédié</h4>
-                                    <p class="text-xs text-slate-300">Un suivi clair pour mieux comprendre les démarches.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+    let activeChatId = null;
+    let chatInterval = null;
 
-        <!-- SECTION NOS SOLUTIONS (AVEC IMAGES CENTRÉES ET RESPONSIVE) -->
-        <section id="solutions" class="py-16 bg-slate-100">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center max-w-3xl mx-auto mb-12">
-                    <h2 class="text-3xl font-bold text-navy-900 mb-4">Nos solutions de financement</h2>
-                    <p class="text-slate-600">Choisissez l'offre adaptée à votre besoin personnel ou professionnel.</p>
-                </div>
+    // --- CONNEXION & SESSION ---
+    async function checkSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) showDashboard();
+    }
+    checkSession();
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    
-                    <!-- PRÊT PERSONNEL -->
-                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-slate-200 p-6 flex flex-col justify-between">
-                        <div>
-                            <div class="w-full h-56 flex items-center justify-center bg-slate-50 rounded-lg overflow-hidden mb-6 p-2 border border-slate-100">
-                                <img src="pret-personnel.jpg" alt="Prêt personnel" class="max-w-full max-h-full object-contain mx-auto my-auto">
-                            </div>
-                            <h3 class="text-xl font-bold text-navy-900 mb-2">Prêt personnel</h3>
-                            <p class="text-slate-600 text-sm mb-4">Financement flexible pour vos projets personnels ou imprévus budgétaires sans obligation d'affectation rigide.</p>
-                        </div>
-                        <a href="contact.html#demande" class="w-full text-center bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold py-2.5 rounded-lg transition">Faire une demande</a>
-                    </div>
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        const errDiv = document.getElementById('errorMsg');
+        errDiv.innerText = "Erreur d'authentification.";
+        errDiv.style.display = 'block';
+      } else {
+        showDashboard();
+      }
+    });
 
-                    <!-- PRÊT POUR UN PROJET -->
-                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-slate-200 p-6 flex flex-col justify-between">
-                        <div>
-                            <div class="w-full h-56 flex items-center justify-center bg-slate-50 rounded-lg overflow-hidden mb-6 p-2 border border-slate-100">
-                                <img src="pret-projet.jpg" alt="Prêt pour un projet" class="max-w-full max-h-full object-contain mx-auto my-auto">
-                            </div>
-                            <h3 class="text-xl font-bold text-navy-900 mb-2">Prêt pour un projet</h3>
-                            <p class="text-slate-600 text-sm mb-4">Accompagnement financier sur mesure pour concrétiser des projets professionnels ou personnels d'envergure.</p>
-                        </div>
-                        <a href="contact.html#demande" class="w-full text-center bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold py-2.5 rounded-lg transition">Faire une demande</a>
-                    </div>
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      location.reload();
+    });
 
-                    <!-- PRÊT IMMOBILIER -->
-                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-slate-200 p-6 flex flex-col justify-between">
-                        <div>
-                            <div class="w-full h-56 flex items-center justify-center bg-slate-50 rounded-lg overflow-hidden mb-6 p-2 border border-slate-100">
-                                <img src="pret-immobilier.jpg" alt="Prêt immobilier" class="max-w-full max-h-full object-contain mx-auto my-auto">
-                            </div>
-                            <h3 class="text-xl font-bold text-navy-900 mb-2">Prêt immobilier</h3>
-                            <p class="text-slate-600 text-sm mb-4">Financez l'acquisition, la construction ou la rénovation de votre bien immobilier à des taux compétitifs.</p>
-                        </div>
-                        <a href="contact.html#demande" class="w-full text-center bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold py-2.5 rounded-lg transition">Faire une demande</a>
-                    </div>
+    function showDashboard() {
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('dashboardCard').style.display = 'block';
+      loadDemandes();
+      
+      // Écoute en temps réel des nouvelles demandes
+      supabaseClient
+        .channel('public:demandes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'demandes' }, payload => {
+          showNotification("Nouvelle demande de prêt ou mise à jour reçue !");
+          loadDemandes();
+        })
+        .subscribe();
+    }
 
-                    <!-- PRÊT AUTOMOBILE -->
-                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-slate-200 p-6 flex flex-col justify-between">
-                        <div>
-                            <div class="w-full h-56 flex items-center justify-center bg-slate-50 rounded-lg overflow-hidden mb-6 p-2 border border-slate-100">
-                                <img src="pret-auto.jpg" alt="Prêt automobile" class="max-w-full max-h-full object-contain mx-auto my-auto">
-                            </div>
-                            <h3 class="text-xl font-bold text-navy-900 mb-2">Prêt automobile</h3>
-                            <p class="text-slate-600 text-sm mb-4">Solution dédiée à l'achat de votre véhicule neuf ou d'occasion, moto ou mobilité urbaine.</p>
-                        </div>
-                        <a href="contact.html#demande" class="w-full text-center bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold py-2.5 rounded-lg transition">Faire une demande</a>
-                    </div>
+    function showNotification(text) {
+      const banner = document.getElementById('notif-banner');
+      document.getElementById('notif-text').innerText = text;
+      banner.style.display = 'block';
+      setTimeout(() => { banner.style.display = 'none'; }, 6000);
+    }
 
-                </div>
-            </div>
-        </section>
-    </main>
+    // --- CHARGEMENT DU TABLEAU ---
+    async function loadDemandes() {
+      const { data, error } = await supabaseClient
+        .from('demandes')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    <!-- PIED DE PAGE -->
-    <footer class="bg-navy-950 text-slate-400 text-xs py-8 border-t border-slate-800 text-center">
-        <p>&copy; Banque International. Tous droits réservés.</p>
-    </footer>
+      if (error || !data) return;
 
-    <script>
-        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
-        });
-    </script>
+      const tbody = document.getElementById('loansTableBody');
+      tbody.innerHTML = '';
+
+      data.forEach(item => {
+        const dateStr = item.created_at ? new Date(item.created_at).toLocaleDateString('fr-FR') : 'N/A';
+        const statusBadge = item.statut === 'Approuvée' 
+          ? '<span class="badge badge-approved">Approuvée</span>' 
+          : item.statut === 'Rejetée' 
+          ? '<span class="badge badge-rejected">Rejetée</span>' 
+          : '<span class="badge badge-pending">En attente</span>';
+
+        const receiptHtml = item.piece_jointe 
+          ? `<a href="${item.piece_jointe}" target="_blank"><img src="${item.piece_jointe}" class="receipt-thumb"></a>` 
+          : '<span style="color:#94a3b8; font-size:11px;">Aucun</span>';
+
+        // Lien WhatsApp pré-rempli
+        const whatsappNum = item.whatsapp ? item.whatsapp.replace(/[^0-9]/g, '') : '';
+        const whatsappLink = whatsappNum 
+          ? `<a href="https://wa.me/${whatsappNum}?text=Bonjour%20${encodeURIComponent(item.nom_complet)},%20nous%20faisons%20suite%20à%20votre%20demande%20sur%20la%20Banque%20Internationale." target="_blank" class="action-btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WA</a>` 
+          : '';
+
+        const row = `
+          <tr>
+            <td>${dateStr}</td>
+            <td><strong>${item.nom_complet || 'N/A'}</strong><br><small style="color:#64748b;">${item.email || ''}</small></td>
+            <td>${item.whatsapp || 'N/A'}</td>
+            <td>${item.type_pret || 'Prêt'} <br><strong>${item.montant || ''}</strong></td>
+            <td>${receiptHtml}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <button class="action-btn btn-approve" onclick="updateStatus('${item.id}', 'Approuvée')">Valider</button>
+              <button class="action-btn btn-reject" onclick="updateStatus('${item.id}', 'Rejetée')">Rejeter</button>
+              ${whatsappLink}
+              <button class="action-btn btn-chat" onclick="openChatModal('${item.id}', '${item.nom_complet}')"><i class="fa-solid fa-comments"></i> Chat</button>
+              <button class="action-btn btn-delete" onclick="deleteDemande('${item.id}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+    }
+
+    window.updateStatus = async function(id, newStatus) {
+      await supabaseClient.from('demandes').update({ statut: newStatus }).eq('id', id);
+      loadDemandes();
+    }
+
+    // --- SUPPRESSION D'UNE DEMANDE ---
+    window.deleteDemande = async function(id) {
+      if (confirm("Voulez-vous vraiment supprimer cette demande de prêt ?")) {
+        const { error } = await supabaseClient.from('demandes').delete().eq('id', id);
+        if (error) {
+          alert("Erreur lors de la suppression : " + error.message);
+        } else {
+          loadDemandes();
+        }
+      }
+    }
+
+    // --- GESTION DU CHAT ADMIN <-> CLIENT ---
+    window.openChatModal = function(id, clientName) {
+      activeChatId = id;
+      document.getElementById('chat-client-title').innerText = `Discussion avec ${clientName || 'le client'}`;
+      document.getElementById('chat-modal').style.display = 'flex';
+      fetchAdminMessages();
+      chatInterval = setInterval(fetchAdminMessages, 3000);
+    }
+
+    window.closeChatModal = function() {
+      document.getElementById('chat-modal').style.display = 'none';
+      activeChatId = null;
+      clearInterval(chatInterval);
+    }
+
+    async function fetchAdminMessages() {
+      if (!activeChatId) return;
+      const { data } = await supabaseClient.from('demandes').select('messages').eq('id', activeChatId).single();
+      if (data && data.messages) {
+        renderChatMessages(data.messages);
+      }
+    }
+
+    function renderChatMessages(messages) {
+      const box = document.getElementById('chat-messages-box');
+      box.innerHTML = '';
+      messages.forEach(m => {
+        const isAdmin = m.sender === 'admin';
+        const div = document.createElement('div');
+        div.className = `p-2.5 rounded-lg max-w-[80%] ${isAdmin ? 'bg-navy-900 border border-slate-700 ml-auto text-right text-white' : 'bg-slate-800 border border-slate-700 mr-auto text-left text-white'}`;
+        div.innerHTML = `<p class="text-[10px] ${isAdmin ? 'text-gold-400' : 'text-slate-400'} font-bold mb-0.5">${isAdmin ? 'Vous (Admin)' : 'Client'}</p><p>${m.text}</p>`;
+        box.appendChild(div);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    window.sendAdminMessage = async function() {
+      const input = document.getElementById('admin-chat-input');
+      const text = input.value.trim();
+      if (!text || !activeChatId) return;
+
+      const { data } = await supabaseClient.from('demandes').select('messages').eq('id', activeChatId).single();
+      const messages = data?.messages || [];
+      
+      messages.push({ sender: 'admin', text: text, time: new Date().toISOString() });
+
+      const { error } = await supabaseClient.from('demandes').update({ messages: messages }).eq('id', activeChatId);
+      if (!error) {
+        input.value = '';
+        renderChatMessages(messages);
+      }
+    }
+  </script>
 </body>
 </html>
