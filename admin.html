@@ -21,7 +21,7 @@
 
     /* Tableau de bord (masqué par défaut) */
     .dashboard { display: none; width: 100%; max-width: 1000px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px style #e2e8f0; padding-bottom: 15px; }
     .btn-logout { background-color: #dc2626; padding: 8px 16px; font-size: 14px; width: auto; }
     .btn-logout:hover { background-color: #b91c1c; }
   </style>
@@ -31,18 +31,16 @@
   <!-- 1. FORMULAIRE DE CONNEXION -->
   <div class="login-card" id="loginCard">
     <h2>Connexion Admin</h2>
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="email">Adresse E-mail</label>
-        <input type="email" id="email" placeholder="admin@banque.com" required>
-      </div>
-      <div class="form-group">
-        <label for="password">Mot de passe</label>
-        <input type="password" id="password" placeholder="••••••••" required>
-      </div>
-      <button type="submit" class="btn" id="loginBtn">Se connecter</button>
-      <div class="error-msg" id="errorMsg"></div>
-    </form>
+    <div class="form-group">
+      <label for="email">Adresse E-mail</label>
+      <input type="email" id="email" placeholder="admin@banque.com" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" placeholder="••••••••" required>
+    </div>
+    <button type="button" class="btn" id="loginBtn">Se connecter</button>
+    <div class="error-msg" id="errorMsg"></div>
   </div>
 
   <!-- 2. TABLEAU DE BORD ADMINISTRATEUR -->
@@ -52,7 +50,6 @@
       <button class="btn btn-logout" id="logoutBtn">Déconnexion</button>
     </div>
     <p>Bienvenue dans l'espace d'administration sécurisé.</p>
-    <!-- Insérez ici vos tableaux, demandes de prêt et filtres -->
   </div>
 
   <script>
@@ -65,7 +62,6 @@
     // Éléments DOM
     const loginCard = document.getElementById('loginCard');
     const dashboardCard = document.getElementById('dashboardCard');
-    const loginForm = document.getElementById('loginForm');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const loginBtn = document.getElementById('loginBtn');
@@ -81,15 +77,22 @@
     }
     checkSession();
 
-    // --- GESTION DE LA CONNEXION ---
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // --- GESTION DE LA CONNEXION AU CLIC ---
+    loginBtn.addEventListener('click', async () => {
       errorMsg.style.display = 'none';
       loginBtn.innerText = 'Connexion en cours...';
       loginBtn.disabled = true;
 
       const email = emailInput.value.trim();
       const password = passwordInput.value;
+
+      if (!email || !password) {
+        errorMsg.innerText = "Veuillez remplir tous les champs.";
+        errorMsg.style.display = 'block';
+        loginBtn.innerText = 'Se connecter';
+        loginBtn.disabled = false;
+        return;
+      }
 
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email,
