@@ -28,7 +28,7 @@
     .btn-logout:hover { background-color: #b91c1c; }
 
     /* Notification Banner */
-    #notif-banner { display: none; background-color: #dcfce7; border: 1px solid #16a34a; color: #166534; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; animation: pulse 2s infinite; }
+    #notif-banner { display: none; background-color: #dcfce7; border: 1px solid #16a34a; color: #166534; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; }
 
     /* Tableaux et sections */
     h3 { margin-bottom: 15px; color: #1e293b; }
@@ -45,6 +45,8 @@
     .btn-reject { background-color: #dc2626; color: white; }
     .btn-whatsapp { background-color: #25d366; color: white; }
     .btn-chat { background-color: #020c1b; color: white; }
+    .btn-delete { background-color: #64748b; color: white; }
+    .btn-delete:hover { background-color: #475569; }
     img.receipt-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #cbd5e1; }
 
     /* Modal de Chat */
@@ -133,8 +135,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let activeChatId = null;
-    let chatRefreshTimer = null;
-    let lastRecordCount = 0;
+    let chatInterval = null;
 
     // --- CONNEXION & SESSION ---
     async function checkSession() {
@@ -166,7 +167,7 @@
       document.getElementById('dashboardCard').style.display = 'block';
       loadDemandes();
       
-      // Écoute en temps réel des nouvelles demandes (Notification instantanée)
+      // Écoute en temps réel des nouvelles demandes
       supabaseClient
         .channel('public:demandes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'demandes' }, payload => {
@@ -207,7 +208,7 @@
           ? `<a href="${item.piece_jointe}" target="_blank"><img src="${item.piece_jointe}" class="receipt-thumb"></a>` 
           : '<span style="color:#94a3b8; font-size:11px;">Aucun</span>';
 
-        // Lien WhatsApp pré-rempli avec le numéro du client
+        // Lien WhatsApp pré-rempli
         const whatsappNum = item.whatsapp ? item.whatsapp.replace(/[^0-9]/g, '') : '';
         const whatsappLink = whatsappNum 
           ? `<a href="https://wa.me/${whatsappNum}?text=Bonjour%20${encodeURIComponent(item.nom_complet)},%20nous%20faisons%20suite%20à%20votre%20demande%20sur%20la%20Banque%20Internationale." target="_blank" class="action-btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WA</a>` 
@@ -226,6 +227,7 @@
               <button class="action-btn btn-reject" onclick="updateStatus('${item.id}', 'Rejetée')">Rejeter</button>
               ${whatsappLink}
               <button class="action-btn btn-chat" onclick="openChatModal('${item.id}', '${item.nom_complet}')"><i class="fa-solid fa-comments"></i> Chat</button>
+              <button class="action-btn btn-delete" onclick="deleteDemande('${item.id}')"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>
         `;
@@ -236,6 +238,18 @@
     window.updateStatus = async function(id, newStatus) {
       await supabaseClient.from('demandes').update({ statut: newStatus }).eq('id', id);
       loadDemandes();
+    }
+
+    // --- SUPPRESSION D'UNE DEMANDE ---
+    window.deleteDemande = async function(id) {
+      if (confirm("Voulez-vous vraiment supprimer cette demande de prêt ?")) {
+        const { error } = await supabaseClient.from('demandes').delete().eq('id', id);
+        if (error) {
+          alert("Erreur lors de la suppression : " + error.message);
+        } else {
+          loadDemandes();
+        }
+      }
     }
 
     // --- GESTION DU CHAT ADMIN <-> CLIENT ---
