@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Administration - Banque Internationale</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #f4f6f9; color: #333; padding: 20px; }
@@ -21,10 +22,13 @@
     .error-msg { color: #ef4444; font-size: 14px; margin-top: 15px; display: none; }
 
     /* Tableau de bord */
-    .dashboard { display: none; max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .dashboard { display: none; max-width: 1300px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
     .btn-logout { background-color: #dc2626; padding: 8px 16px; font-size: 14px; width: auto; }
     .btn-logout:hover { background-color: #b91c1c; }
+
+    /* Notification Banner */
+    #notif-banner { display: none; background-color: #dcfce7; border: 1px solid #16a34a; color: #166534; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; animation: pulse 2s infinite; }
 
     /* Tableaux et sections */
     h3 { margin-bottom: 15px; color: #1e293b; }
@@ -35,10 +39,22 @@
     .badge-pending { background-color: #fef3c7; color: #d97706; }
     .badge-approved { background-color: #dcfce7; color: #16a34a; }
     .badge-rejected { background-color: #fee2e2; color: #dc2626; }
-    .action-btn { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; margin-right: 5px; }
+    
+    .action-btn { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; margin-right: 4px; margin-bottom: 4px; display: inline-block; text-decoration: none; text-align: center; }
     .btn-approve { background-color: #16a34a; color: white; }
     .btn-reject { background-color: #dc2626; color: white; }
+    .btn-whatsapp { background-color: #25d366; color: white; }
+    .btn-chat { background-color: #020c1b; color: white; }
     img.receipt-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #cbd5e1; }
+
+    /* Modal de Chat */
+    #chat-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+    .chat-container { background: #020c1b; width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 550px; border: 1px solid #1e293b; }
+    .chat-header { background: #0a192f; padding: 15px; color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; }
+    .chat-messages { flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+    .chat-input-area { padding: 15px; background: #0a192f; display: flex; gap: 10px; border-top: 1px solid #1e293b; }
+    .chat-input-area input { flex-grow: 1; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #020c1b; color: white; font-size: 13px; }
+    .chat-input-area button { padding: 10px 15px; background: #fbbf24; color: #020c1b; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -67,17 +83,22 @@
       <button class="btn btn-logout" id="logoutBtn">Déconnexion</button>
     </div>
 
-    <h3>Demandes de Prêts Reçues (Table : demandes)</h3>
+    <!-- BANNIÈRE DE NOTIFICATION -->
+    <div id="notif-banner">
+      <i class="fa-solid fa-bell mr-2"></i> <span id="notif-text">Nouvelle activité détectée sur le site !</span>
+    </div>
+
+    <h3>Demandes de Prêts & Interactions Clients</h3>
     <table>
       <thead>
         <tr>
           <th>Date</th>
           <th>Client</th>
           <th>Contact / WhatsApp</th>
-          <th>Type & Montant</th>
+          <th>Prêt & Montant</th>
           <th>Reçu</th>
           <th>Statut</th>
-          <th>Actions</th>
+          <th>Actions & Chat</th>
         </tr>
       </thead>
       <tbody id="loansTableBody">
@@ -88,100 +109,109 @@
     </table>
   </div>
 
+  <!-- MODAL DE DISCUSSION EN DIRECT -->
+  <div id="chat-modal">
+    <div class="chat-container">
+      <div class="chat-header">
+        <span id="chat-client-title" class="font-bold text-gold-400">Discussion avec le client</span>
+        <button onclick="closeChatModal()" class="text-slate-400 hover:text-white font-bold"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div id="chat-messages-box" class="chat-messages">
+        <!-- Messages injectés ici -->
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="admin-chat-input" placeholder="Écrire un message au client...">
+        <button onclick="sendAdminMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // --- INITIALISATION SUPABASE ---
     const SUPABASE_URL = "https://ibrbrpctifzrksfsqbiv.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_0Wbabg9JV5RrfWkm_PoIhw_xyXFNsiy";
-    
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Éléments DOM
-    const loginContainer = document.getElementById('loginContainer');
-    const dashboardCard = document.getElementById('dashboardCard');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const loginBtn = document.getElementById('loginBtn');
-    const errorMsg = document.getElementById('errorMsg');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const loansTableBody = document.getElementById('loansTableBody');
+    let activeChatId = null;
+    let chatRefreshTimer = null;
+    let lastRecordCount = 0;
 
-    // --- VÉRIFICATION DE LA SESSION ---
+    // --- CONNEXION & SESSION ---
     async function checkSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        showDashboard();
-      }
+      if (session) showDashboard();
     }
     checkSession();
 
-    // --- CONNEXION ---
-    loginBtn.addEventListener('click', async () => {
-      errorMsg.style.display = 'none';
-      loginBtn.innerText = 'Connexion en cours...';
-      loginBtn.disabled = true;
-
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
       if (error) {
-        errorMsg.innerText = "Erreur : Identifiants ou mot de passe incorrects.";
-        errorMsg.style.display = 'block';
-        loginBtn.innerText = 'Se connecter';
-        loginBtn.disabled = false;
+        const errDiv = document.getElementById('errorMsg');
+        errDiv.innerText = "Erreur d'authentification.";
+        errDiv.style.display = 'block';
       } else {
         showDashboard();
       }
     });
 
-    // --- DÉCONNEXION ---
-    logoutBtn.addEventListener('click', async () => {
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabaseClient.auth.signOut();
-      loginContainer.style.display = 'flex';
-      dashboardCard.style.display = 'none';
-      loginBtn.innerText = 'Se connecter';
-      loginBtn.disabled = false;
-      passwordInput.value = '';
+      location.reload();
     });
 
-    // --- AFFICHAGE DU TABLEAU DE BORD & CHARGEMENT DES DEMANDES ---
     function showDashboard() {
-      loginContainer.style.display = 'none';
-      dashboardCard.style.display = 'block';
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('dashboardCard').style.display = 'block';
       loadDemandes();
+      
+      // Écoute en temps réel des nouvelles demandes (Notification instantanée)
+      supabaseClient
+        .channel('public:demandes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'demandes' }, payload => {
+          showNotification("Nouvelle demande de prêt ou mise à jour reçue !");
+          loadDemandes();
+        })
+        .subscribe();
     }
 
+    function showNotification(text) {
+      const banner = document.getElementById('notif-banner');
+      document.getElementById('notif-text').innerText = text;
+      banner.style.display = 'block';
+      setTimeout(() => { banner.style.display = 'none'; }, 6000);
+    }
+
+    // --- CHARGEMENT DU TABLEAU ---
     async function loadDemandes() {
       const { data, error } = await supabaseClient
         .from('demandes')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        loansTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Erreur de chargement : ${error.message}</td></tr>`;
-        return;
-      }
+      if (error || !data) return;
 
-      if (!data || data.length === 0) {
-        loansTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #64748b;">Aucune demande de prêt pour le moment.</td></tr>`;
-        return;
-      }
+      const tbody = document.getElementById('loansTableBody');
+      tbody.innerHTML = '';
 
-      loansTableBody.innerHTML = '';
       data.forEach(item => {
         const dateStr = item.created_at ? new Date(item.created_at).toLocaleDateString('fr-FR') : 'N/A';
-        
-        let statusBadge = '<span class="badge badge-pending">En attente</span>';
-        if (item.statut === 'Approuvée' || item.statut === 'approved') {
-          statusBadge = '<span class="badge badge-approved">Approuvée</span>';
-        } else if (item.statut === 'Rejetée' || item.statut === 'rejected') {
-          statusBadge = '<span class="badge badge-rejected">Rejetée</span>';
-        }
+        const statusBadge = item.statut === 'Approuvée' 
+          ? '<span class="badge badge-approved">Approuvée</span>' 
+          : item.statut === 'Rejetée' 
+          ? '<span class="badge badge-rejected">Rejetée</span>' 
+          : '<span class="badge badge-pending">En attente</span>';
 
         const receiptHtml = item.piece_jointe 
-          ? `<a href="${item.piece_jointe}" target="_blank"><img src="${item.piece_jointe}" class="receipt-thumb" title="Voir le reçu"></a>` 
+          ? `<a href="${item.piece_jointe}" target="_blank"><img src="${item.piece_jointe}" class="receipt-thumb"></a>` 
           : '<span style="color:#94a3b8; font-size:11px;">Aucun</span>';
+
+        // Lien WhatsApp pré-rempli avec le numéro du client
+        const whatsappNum = item.whatsapp ? item.whatsapp.replace(/[^0-9]/g, '') : '';
+        const whatsappLink = whatsappNum 
+          ? `<a href="https://wa.me/${whatsappNum}?text=Bonjour%20${encodeURIComponent(item.nom_complet)},%20nous%20faisons%20suite%20à%20votre%20demande%20sur%20la%20Banque%20Internationale." target="_blank" class="action-btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WA</a>` 
+          : '';
 
         const row = `
           <tr>
@@ -194,24 +224,70 @@
             <td>
               <button class="action-btn btn-approve" onclick="updateStatus('${item.id}', 'Approuvée')">Valider</button>
               <button class="action-btn btn-reject" onclick="updateStatus('${item.id}', 'Rejetée')">Rejeter</button>
+              ${whatsappLink}
+              <button class="action-btn btn-chat" onclick="openChatModal('${item.id}', '${item.nom_complet}')"><i class="fa-solid fa-comments"></i> Chat</button>
             </td>
           </tr>
         `;
-        loansTableBody.innerHTML += row;
+        tbody.innerHTML += row;
       });
     }
 
-    // --- MISE À JOUR DU STATUT ---
     window.updateStatus = async function(id, newStatus) {
-      const { error } = await supabaseClient
-        .from('demandes')
-        .update({ statut: newStatus })
-        .eq('id', id);
+      await supabaseClient.from('demandes').update({ statut: newStatus }).eq('id', id);
+      loadDemandes();
+    }
 
-      if (error) {
-        alert("Erreur lors de la mise à jour : " + error.message);
-      } else {
-        loadDemandes(); // Recharge le tableau en direct
+    // --- GESTION DU CHAT ADMIN <-> CLIENT ---
+    window.openChatModal = function(id, clientName) {
+      activeChatId = id;
+      document.getElementById('chat-client-title').innerText = `Discussion avec ${clientName || 'le client'}`;
+      document.getElementById('chat-modal').style.display = 'flex';
+      fetchAdminMessages();
+      chatInterval = setInterval(fetchAdminMessages, 3000);
+    }
+
+    window.closeChatModal = function() {
+      document.getElementById('chat-modal').style.display = 'none';
+      activeChatId = null;
+      clearInterval(chatInterval);
+    }
+
+    async function fetchAdminMessages() {
+      if (!activeChatId) return;
+      const { data } = await supabaseClient.from('demandes').select('messages').eq('id', activeChatId).single();
+      if (data && data.messages) {
+        renderChatMessages(data.messages);
+      }
+    }
+
+    function renderChatMessages(messages) {
+      const box = document.getElementById('chat-messages-box');
+      box.innerHTML = '';
+      messages.forEach(m => {
+        const isAdmin = m.sender === 'admin';
+        const div = document.createElement('div');
+        div.className = `p-2.5 rounded-lg max-w-[80%] ${isAdmin ? 'bg-navy-900 border border-slate-700 ml-auto text-right text-white' : 'bg-slate-800 border border-slate-700 mr-auto text-left text-white'}`;
+        div.innerHTML = `<p class="text-[10px] ${isAdmin ? 'text-gold-400' : 'text-slate-400'} font-bold mb-0.5">${isAdmin ? 'Vous (Admin)' : 'Client'}</p><p>${m.text}</p>`;
+        box.appendChild(div);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    window.sendAdminMessage = async function() {
+      const input = document.getElementById('admin-chat-input');
+      const text = input.value.trim();
+      if (!text || !activeChatId) return;
+
+      const { data } = await supabaseClient.from('demandes').select('messages').eq('id', activeChatId).single();
+      const messages = data?.messages || [];
+      
+      messages.push({ sender: 'admin', text: text, time: new Date().toISOString() });
+
+      const { error } = await supabaseClient.from('demandes').update({ messages: messages }).eq('id', activeChatId);
+      if (!error) {
+        input.value = '';
+        renderChatMessages(messages);
       }
     }
   </script>
