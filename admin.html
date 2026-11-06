@@ -1,357 +1,137 @@
 <!DOCTYPE html>
-<html lang="fr" class="scroll-smooth">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banque International — Espace Administrateur Pro</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration - Banque Internationale</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f4f6f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        navy: { 800: '#0a192f', 900: '#020c1b', 950: '#010610' },
-                        gold: { 400: '#fbbf24', 500: '#d97706', 600: '#b45309' }
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    /* Écran de connexion */
+    .login-card { background: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+    .login-card h2 { margin-bottom: 20px; color: #1e293b; }
+    .form-group { margin-bottom: 15px; text-align: left; }
+    .form-group label { display: block; font-size: 14px; margin-bottom: 5px; color: #64748b; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; }
+    .btn { width: 100%; padding: 12px; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .btn:hover { background-color: #1d4ed8; }
+    .error-msg { color: #ef4444; font-size: 14px; margin-top: 15px; display: none; }
+
+    /* Tableau de bord (masqué par défaut) */
+    .dashboard { display: none; width: 100%; max-width: 1000px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
+    .btn-logout { background-color: #dc2626; padding: 8px 16px; font-size: 14px; width: auto; }
+    .btn-logout:hover { background-color: #b91c1c; }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
+<body>
 
-    <!-- BARRE SUPERIEURE ADMIN -->
-    <header class="bg-navy-950 border-b border-slate-800 py-4 px-6 sticky top-0 z-50 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-lg bg-navy-800 border border-gold-500/30 flex items-center justify-center p-1">
-                <i class="fa-solid fa-building-columns text-gold-400 text-xl"></i>
-            </div>
-            <span class="font-bold text-lg tracking-wider text-slate-100">ADMIN <span class="text-gold-400">BANQUE INTERNATIONAL</span></span>
-        </div>
-        <div id="admin-user-bar" class="hidden flex items-center space-x-4">
-            <span id="admin-email" class="text-xs text-slate-400"></span>
-            <button onclick="logoutAdmin()" class="bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-                <i class="fa-solid fa-right-from-bracket mr-1"></i> Déconnexion
-            </button>
-        </div>
-    </header>
+  <!-- 1. FORMULAIRE DE CONNEXION -->
+  <div class="login-card" id="loginCard">
+    <h2>Connexion Admin</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Adresse E-mail</label>
+        <input type="email" id="email" placeholder="admin@banque.com" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn" id="loginBtn">Se connecter</button>
+      <div class="error-msg" id="errorMsg"></div>
+    </form>
+  </div>
 
-    <main class="flex-grow p-4 sm:p-8 max-w-7xl mx-auto w-full">
-
-        <!-- ECRAN DE CONNEXION -->
-        <div id="login-section" class="max-w-md mx-auto my-12 bg-navy-950 p-8 rounded-2xl border border-slate-800 shadow-2xl">
-            <div class="text-center mb-6">
-                <i class="fa-solid fa-user-shield text-4xl text-gold-400 mb-3"></i>
-                <h1 class="text-2xl font-bold">Connexion Administrateur</h1>
-                <p class="text-xs text-slate-400 mt-1">Accès sécurisé au personnel</p>
-            </div>
-            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">E-mail</label>
-                    <input type="email" id="login-email" required class="w-full bg-navy-900 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-gold-500 text-white">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Mot de passe</label>
-                    <input type="password" id="login-password" required class="w-full bg-navy-900 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-gold-500 text-white">
-                </div>
-                <div id="login-error" class="hidden text-xs text-red-400 bg-red-950/50 p-2.5 rounded border border-red-800"></div>
-                <button type="submit" class="w-full bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold py-3 rounded-lg transition shadow">
-                    Se connecter
-                </button>
-            </form>
-        </div>
-
-        <!-- TABLEAU DE BORD -->
-        <div id="dashboard-section" class="hidden space-y-8">
-            
-            <!-- STATS -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div class="bg-navy-950 p-6 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-slate-400 font-semibold uppercase">Total Demandes</p>
-                        <h3 id="stat-total" class="text-3xl font-bold text-white mt-1">0</h3>
-                    </div>
-                    <div class="p-3 bg-blue-500/10 text-blue-400 rounded-lg"><i class="fa-solid fa-users text-2xl"></i></div>
-                </div>
-                <div class="bg-navy-950 p-6 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-slate-400 font-semibold uppercase">En attente</p>
-                        <h3 id="stat-pending" class="text-3xl font-bold text-gold-400 mt-1">0</h3>
-                    </div>
-                    <div class="p-3 bg-gold-500/10 text-gold-400 rounded-lg"><i class="fa-solid fa-clock text-2xl"></i></div>
-                </div>
-                <div class="bg-navy-950 p-6 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-slate-400 font-semibold uppercase">Approuvées</p>
-                        <h3 id="stat-approved" class="text-3xl font-bold text-emerald-400 mt-1">0</h3>
-                    </div>
-                    <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg"><i class="fa-solid fa-circle-check text-2xl"></i></div>
-                </div>
-            </div>
-
-            <!-- TABLEAU DES DEMANDES ET FILTRES -->
-            <div class="bg-navy-950 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
-                <div class="p-6 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h2 class="text-lg font-bold flex items-center space-x-2">
-                        <i class="fa-solid fa-list text-gold-400"></i>
-                        <span>Gestion des demandes et dossiers clients</span>
-                    </h2>
-                    
-                    <!-- FILTRES ET RECHERCHE -->
-                    <div class="flex flex-wrap items-center gap-2">
-                        <select id="status-filter" onchange="filterRequests()" class="bg-navy-900 border border-slate-700 text-xs rounded-lg px-3 py-2 text-white focus:outline-none focus:border-gold-500">
-                            <option value="Tous">Tous les statuts</option>
-                            <option value="En attente">En attente</option>
-                            <option value="En cours">En cours</option>
-                            <option value="Approuvé">Approuvé</option>
-                            <option value="Refusé">Refusé</option>
-                        </select>
-                        <input type="text" id="search-input" oninput="filterRequests()" placeholder="Rechercher par nom..." class="bg-navy-900 border border-slate-700 text-xs rounded-lg px-3 py-2 text-white focus:outline-none focus:border-gold-500">
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-navy-900 text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                            <tr>
-                                <th class="p-4">Date</th>
-                                <th class="p-4">Client</th>
-                                <th class="p-4">Montant & Type</th>
-                                <th class="p-4">Photo / Reçu</th>
-                                <th class="p-4">Statut</th>
-                                <th class="p-4">Actions & Discussion</th>
-                            </tr>
-                        </thead>
-                        <tbody id="requests-table-body" class="divide-y divide-slate-800/60"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- MODAL DE VISUALISATION D'IMAGE SÉCURISÉE -->
-    <div id="image-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-        <div class="bg-navy-950 border border-slate-800 rounded-2xl max-w-xl w-full p-6 text-center space-y-4 shadow-2xl relative">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="font-bold text-sm text-gold-400"><i class="fa-solid fa-image mr-2"></i> Reçu de paiement du client</h3>
-                <button onclick="closeImageModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="flex justify-center bg-navy-900 p-2 rounded-lg border border-slate-800 max-h-[60vh] overflow-auto">
-                <img id="modal-image-preview" src="" alt="Reçu client" class="max-w-full h-auto rounded object-contain">
-            </div>
-            <button onclick="closeImageModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-lg text-xs transition">
-                Fermer
-            </button>
-        </div>
+  <!-- 2. TABLEAU DE BORD ADMINISTRATEUR -->
+  <div class="dashboard" id="dashboardCard">
+    <div class="dashboard-header">
+      <h2>Tableau de Bord - Banque Internationale</h2>
+      <button class="btn btn-logout" id="logoutBtn">Déconnexion</button>
     </div>
+    <p>Bienvenue dans l'espace d'administration sécurisé.</p>
+    <!-- Insérez ici vos tableaux, demandes de prêt et filtres -->
+  </div>
 
-    <!-- MODAL DE DISCUSSION -->
-    <div id="chat-modal" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-        <div class="bg-navy-950 border border-slate-800 w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col h-[600px] shadow-2xl">
-            <div class="bg-navy-900 p-4 border-b border-slate-800 flex justify-between items-center">
-                <h3 id="chat-client-name" class="font-bold text-sm text-gold-400">Discussion Client</h3>
-                <button onclick="closeChat()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
-            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-navy-950 text-xs"></div>
+  <script>
+    // --- INITIALISATION SUPABASE ---
+    const SUPABASE_URL = "https://ibrbrpctifzrksfsqbiv.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_0Wbabg9JV5RrfWkm_PoIhw_xyXFNsiy";
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            <form onsubmit="sendAdminMessage(event)" class="p-3 bg-navy-900 border-t border-slate-800 flex gap-2">
-                <input type="text" id="admin-msg-input" required placeholder="Écrire un message au client..." class="flex-grow bg-navy-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-gold-500">
-                <button type="submit" class="bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold px-4 py-2 rounded-lg text-xs">Envoyer</button>
-            </form>
-        </div>
-    </div>
+    // Éléments DOM
+    const loginCard = document.getElementById('loginCard');
+    const dashboardCard = document.getElementById('dashboardCard');
+    const loginForm = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-    <script>
-        const SUPABASE_URL = "https://ibrbrpctifzrksfsqbiv.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_0Wbabg9JV5RrfWkm_PoIhw_xyXFNsiy";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        let allRequests = [];
-        let currentRequestId = null;
-        let lastCount = 0;
+    // --- VÉRIFICATION DE LA SESSION EXISTANTE ---
+    async function checkSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        showDashboard();
+      }
+    }
+    checkSession();
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session && session.user) {
-                showDashboard(session.user);
-                setInterval(checkNewRequests, 10000);
-            }
-        });
+    // --- GESTION DE LA CONNEXION ---
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.style.display = 'none';
+      loginBtn.innerText = 'Connexion en cours...';
+      loginBtn.disabled = true;
 
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errDiv = document.getElementById('login-error');
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) {
-                errDiv.textContent = "Identifiants incorrects.";
-                errDiv.classList.remove('hidden');
-            } else {
-                showDashboard(data.user);
-            }
-        }
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
 
-        function showDashboard(user) {
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.remove('hidden');
-            document.getElementById('admin-user-bar').classList.remove('hidden');
-            document.getElementById('admin-email').textContent = user.email;
-            loadRequests();
-        }
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
 
-        async function logoutAdmin() {
-            await supabaseClient.auth.signOut();
-            location.reload();
-        }
+      if (error) {
+        errorMsg.innerText = "Erreur : " + translateError(error.message);
+        errorMsg.style.display = 'block';
+        loginBtn.innerText = 'Se connecter';
+        loginBtn.disabled = false;
+      } else {
+        showDashboard();
+      }
+    });
 
-        async function loadRequests() {
-            const { data, error } = await supabaseClient.from('demandes').select('*').order('created_at', { ascending: false });
-            if (!error && data) {
-                if (lastCount > 0 && data.length > lastCount) {
-                    playAlertSound();
-                }
-                lastCount = data.length;
-                allRequests = data;
-                updateStats();
-                filterRequests();
-            }
-        }
+    // --- GESTION DE LA DÉCONNEXION ---
+    logoutBtn.addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      showLogin();
+    });
 
-        async function checkNewRequests() {
-            const { count } = await supabaseClient.from('demandes').select('*', { count: 'exact', head: true });
-            if (count > lastCount) {
-                playAlertSound();
-                loadRequests();
-            }
-        }
+    // Affichage des vues
+    function showDashboard() {
+      loginCard.style.display = 'none';
+      dashboardCard.style.display = 'block';
+    }
 
-        function playAlertSound() {
-            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-            audio.play().catch(e => console.log("Audio bloqué"));
-        }
+    function showLogin() {
+      loginCard.style.display = 'block';
+      dashboardCard.style.display = 'none';
+      loginBtn.innerText = 'Se connecter';
+      loginBtn.disabled = false;
+      passwordInput.value = '';
+    }
 
-        function updateStats() {
-            document.getElementById('stat-total').textContent = allRequests.length;
-            document.getElementById('stat-pending').textContent = allRequests.filter(r => r.statut === 'En attente').length;
-            document.getElementById('stat-approved').textContent = allRequests.filter(r => r.statut === 'Approuvé').length;
-        }
-
-        // Fonction de filtrage et recherche combinée
-        function filterRequests() {
-            const statusVal = document.getElementById('status-filter').value;
-            const searchVal = document.getElementById('search-input').value.toLowerCase();
-
-            const filtered = allRequests.filter(req => {
-                const matchStatus = (statusVal === 'Tous' || req.statut === statusVal);
-                const matchSearch = (req.nom_complet && req.nom_complet.toLowerCase().includes(searchVal)) || 
-                                    (req.email && req.email.toLowerCase().includes(searchVal));
-                return matchStatus && matchSearch;
-            });
-
-            renderRequests(filtered);
-        }
-
-        function renderRequests(list) {
-            const tbody = document.getElementById('requests-table-body');
-            tbody.innerHTML = '';
-            if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Aucune demande trouvée.</td></tr>`;
-                return;
-            }
-
-            list.forEach(req => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-navy-900/50 transition";
-                const cleanPhone = (req.whatsapp || '').replace(/[^0-9]/g, '');
-                const waUrl = `https://wa.me/${cleanPhone}`;
-
-                let photoHtml = `<span class="text-slate-500">Aucune</span>`;
-                if (req.piece_jointe) {
-                    photoHtml = `<button onclick="openImageModal('${encodeURIComponent(req.piece_jointe)}')" class="text-gold-400 underline font-semibold flex items-center hover:text-gold-300"><i class="fa-solid fa-image mr-1"></i> Voir la photo</button>`;
-                }
-
-                tr.innerHTML = `
-                    <td class="p-4 text-slate-400">${new Date(req.created_at).toLocaleDateString('fr-FR')}</td>
-                    <td class="p-4 font-semibold text-white">${req.nom_complet}<br><span class="text-slate-400 font-normal">${req.email}</span></td>
-                    <td class="p-4">${req.type_pret}<br><span class="text-gold-400 font-bold">${req.montant}</span></td>
-                    <td class="p-4">${photoHtml}</td>
-                    <td class="p-4">
-                        <select onchange="updateStatus('${req.id}', this.value)" class="bg-navy-900 border border-slate-700 text-xs rounded p-1 text-slate-200">
-                            <option value="En attente" ${req.statut === 'En attente' ? 'selected' : ''}>En attente</option>
-                            <option value="En cours" ${req.statut === 'En cours' ? 'selected' : ''}>En cours</option>
-                            <option value="Approuvé" ${req.statut === 'Approuvé' ? 'selected' : ''}>Approuvé</option>
-                            <option value="Refusé" ${req.statut === 'Refusé' ? 'selected' : ''}>Refusé</option>
-                        </select>
-                    </td>
-                    <td class="p-4 space-x-1 flex items-center">
-                        <a href="${waUrl}" target="_blank" class="bg-emerald-600 text-white px-2 py-1 rounded text-[11px] font-bold"><i class="fa-brands fa-whatsapp"></i></a>
-                        <button onclick="openChat('${req.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-[11px] font-bold"><i class="fa-solid fa-comments"></i> Chat</button>
-                        <button onclick="deleteRequest('${req.id}')" class="bg-red-600/30 text-red-300 px-2 py-1 rounded text-[11px]"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function openImageModal(encodedData) {
-            const imageUrl = decodeURIComponent(encodedData);
-            document.getElementById('modal-image-preview').src = imageUrl;
-            document.getElementById('image-modal').classList.remove('hidden');
-        }
-
-        function closeImageModal() {
-            document.getElementById('image-modal').classList.add('hidden');
-            document.getElementById('modal-image-preview').src = '';
-        }
-
-        function openChat(id) {
-            currentRequestId = id;
-            const req = allRequests.find(r => r.id === id);
-            if (!req) return;
-
-            document.getElementById('chat-client-name').textContent = `Discussion avec ${req.nom_complet}`;
-            renderMessages(req.messages || []);
-            document.getElementById('chat-modal').classList.remove('hidden');
-        }
-
-        function closeChat() {
-            document.getElementById('chat-modal').classList.add('hidden');
-            currentRequestId = null;
-        }
-
-        function renderMessages(messages) {
-            const container = document.getElementById('chat-messages');
-            container.innerHTML = '';
-            if (messages.length === 0) {
-                container.innerHTML = `<p class="text-center text-slate-500 py-4">Aucun message pour le moment.</p>`;
-                return;
-            }
-            messages.forEach(m => {
-                const div = document.createElement('div');
-                div.className = `p-2.5 rounded-lg max-w-[80%] ${m.sender === 'admin' ? 'bg-gold-500/20 border border-gold-500/30 ml-auto text-right' : 'bg-navy-900 border border-slate-700 mr-auto'}`;
-                div.innerHTML = `<p class="text-[10px] text-slate-400 font-bold mb-0.5">${m.sender === 'admin' ? 'Administrateur' : 'Client'}</p><p class="text-white">${m.text}</p>`;
-                container.appendChild(div);
-            });
-            container.scrollTop = container.scrollHeight;
-        }
-
-        async function sendAdminMessage(e) {
-            e.preventDefault();
-            const input = document.getElementById('admin-msg-input');
-            const text = input.value.trim();
-            if (!text || !currentRequestId) return;
-
-            const req = allRequests.find(r => r.id === currentRequestId);
-            const messages = req.messages || [];
-            messages.push({ sender: 'admin', text: text, time: new Date().toISOString() });
-
-            const { error } = await supabaseClient.from('demandes').update({ messages: messages }).eq('id', currentRequestId);
-            if (!error) {
-                input.va
+    // Traduction simple des erreurs courantes Supabase
+    function translateError(msg) {
+      if (msg.includes("Invalid login credentials")) return "Identifiants ou mot de passe incorrects.";
+      if (msg.includes("Email not confirmed")) return "L'adresse e-mail n'a pas été confirmée.";
+      return msg;
+    }
+  </script>
+</body>
+</html>
